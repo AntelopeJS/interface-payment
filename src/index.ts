@@ -167,9 +167,19 @@ export interface PaymentRequest {
   offSession?: boolean;
   /**
    * Save the method this payment uses for later off-session charges.
-   * Requires `customer`. The saved method appears in
-   * {@link ListPaymentMethods} once the payment reaches `succeeded` or
-   * `authorized` — not as soon as this call returns.
+   *
+   * Requires `customer`, and requires the payer to be present: this cannot be
+   * combined with `offSession`. Saving a method means taking a mandate from the
+   * payer, and an absent payer cannot give one — they may need to authenticate
+   * to authorise future charges. Providers enforce this; Stripe rejects the
+   * combination outright.
+   *
+   * The recurring shape is therefore two payments: one on-session that saves
+   * the method, then any number off-session against the saved
+   * {@link PaymentMethod}.
+   *
+   * The saved method appears in {@link ListPaymentMethods} once the payment
+   * reaches `succeeded` or `authorized` — not as soon as this call returns.
    */
   savePaymentMethod?: boolean;
   /**
@@ -786,6 +796,10 @@ export function GetCheckoutSession(
  *
  * Two uses: charging a saved method off-session (set `paymentMethod` and
  * `offSession`), and taking a payment through a payment form you host yourself.
+ *
+ * `savePaymentMethod` and `offSession` are mutually exclusive — a mandate can
+ * only be taken from a payer who is present. See
+ * {@link PaymentRequest.savePaymentMethod}.
  *
  * A declined payment is a result, not an error: this resolves with a
  * {@link Payment} whose status is `failed` and whose {@link Payment.failure} says

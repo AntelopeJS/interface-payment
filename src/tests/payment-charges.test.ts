@@ -20,6 +20,7 @@ import {
   DECLINABLE,
   PARTIAL_VALUE,
   REFUND_VALUE,
+  SUCCESS_URL,
   SUITE_TIMEOUT,
   TEST_METHOD,
   TEST_METHOD_DECLINED,
@@ -106,8 +107,8 @@ describe(`direct payments (${CHARGEABLE})`, function () {
         reference: reference(),
         paymentMethod: TEST_METHOD,
         customer: customer.id,
-        offSession: true,
         savePaymentMethod: true,
+        returnUrl: SUCCESS_URL,
       },
       key(),
     );
@@ -126,6 +127,18 @@ describe(`direct payments (${CHARGEABLE})`, function () {
       assert.ok(method.card.expiryMonth >= 1 && method.card.expiryMonth <= 12);
       assert.ok(method.card.expiryYear >= new Date().getFullYear());
     }
+
+    const renewal = await CreatePayment(
+      {
+        amount: amount(PARTIAL_VALUE),
+        reference: reference(),
+        customer: customer.id,
+        paymentMethod: method.id,
+        offSession: true,
+      },
+      key(),
+    );
+    await settle(renewal.id, "succeeded");
 
     await DetachPaymentMethod(method.id, key());
     const remaining = await ListPaymentMethods(customer.id);
