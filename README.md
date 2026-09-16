@@ -83,10 +83,18 @@ one provider's behaviour, and it is what a new provider implementation is held
 to.
 
 Session creation, customer lifecycle, idempotency replay, unknown-identifier
-errors and webhook signature rejection need no fixture and cannot pass without a
-live provider. The charge tests need a chargeable provider test token in
-`ANTELOPE_PAYMENT_TEST_METHOD` (and optionally a declining one in
-`ANTELOPE_PAYMENT_TEST_METHOD_DECLINED`); they skip by name when it is absent.
+errors and webhook rejection need no fixture and cannot pass without a live
+provider — with nothing implementing the interface the proxies queue and the
+suite times out rather than reporting green.
+
+The charge tests need a provider test token, because there is no portable way to
+mint a chargeable payment method:
+
+| Variable                                | Purpose                                                                                                      |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `ANTELOPE_PAYMENT_TEST_METHOD`          | A token `CreatePayment` charges successfully. Without it the charge, capture and refund blocks skip by name. |
+| `ANTELOPE_PAYMENT_TEST_METHOD_DECLINED` | A token the provider declines. Without it the decline block skips.                                           |
+| `ANTELOPE_PAYMENT_TEST_CURRENCY`        | ISO-4217 code to run against. Defaults to `EUR`.                                                             |
 
 ## License
 

@@ -169,9 +169,11 @@ for (const entry of FORWARDING) {
 
     await payment[entry.wrapper](...entry.minimal);
     assert.deepEqual(proxy.mock.calls[0].arguments, entry.expectedMinimal);
+    assert.equal(proxy.mock.callCount(), 1);
   });
 
   it(`${entry.wrapper} lets a provider failure through unchanged`, async () => {
+    rejectEveryOtherProxy(entry.proxy);
     const failure = new payment.PaymentError("provider unreachable", "net_1");
     const proxy = stub(entry.proxy, Promise.reject(failure));
 
@@ -282,4 +284,70 @@ it("names the unsupported operation so a caller can report it", () => {
   const error = new payment.UnsupportedOperationError("CapturePayment");
   assert.equal(error.operation, "CapturePayment");
   assert.match(error.message, /CapturePayment/);
+});
+
+const PROVIDER_CODE = "provider_specific_code";
+
+it("carries the provider's own code through every error subclass", () => {
+  const built = [
+    new payment.PaymentNotFoundError(PAYMENT_ID, "refund", PROVIDER_CODE),
+    new payment.CustomerNotFoundError(
+      METHOD_ID,
+      "payment method",
+      PROVIDER_CODE,
+    ),
+    new payment.WebhookVerificationError("bad", PROVIDER_CODE),
+    new payment.InvalidPaymentStateError("bad", "succeeded", PROVIDER_CODE),
+    new payment.UnsupportedOperationError("CapturePayment", PROVIDER_CODE),
+  ];
+
+  for (const error of built) {
+    assert.equal(
+      error.providerCode,
+      PROVIDER_CODE,
+      `${error.name} dropped the provider code on the way to super()`,
+    );
+  }
+});
+
+it("names the entity it could not find, not a hardcoded one", () => {
+  assert.match(
+    new payment.PaymentNotFoundError(REFUND_ID, "refund").message,
+    /No such refund:/,
+  );
+  assert.match(
+    new payment.PaymentNotFoundError(SESSION_ID, "checkout session").message,
+    /No such checkout session:/,
+  );
+  assert.match(
+    new payment.CustomerNotFoundError(METHOD_ID, "payment method").message,
+    /No such payment method:/,
+  );
+  assert.match(
+    new payment.PaymentNotFoundError(PAYMENT_ID).message,
+    /No such payment:/,
+  );
+  assert.match(
+    new payment.CustomerNotFoundError(CUSTOMER_ID).message,
+    /No such customer:/,
+  );
+});
+
+it("freezes the vocabulary so no consumer can rewrite it", () => {
+  const vocabularies = [
+    "PAYMENT_STATUSES",
+    "TERMINAL_PAYMENT_STATUSES",
+    "PAYMENT_FAILURE_CODES",
+    "REFUND_STATUSES",
+    "REFUND_REASONS",
+    "PAYMENT_METHOD_TYPES",
+    "PAYMENT_EVENT_TYPES",
+  ];
+
+  for (const name of vocabularies) {
+    assert.ok(Object.isFrozen(payment[name]), `${name} is mutable`);
+    assert.throws(() => payment[name].push("injected"), TypeError, name);
+  }
+
+  assert.equal(payment.isTerminalPaymentStatus("pending"), false);
 });

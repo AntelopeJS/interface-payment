@@ -1,2 +1,2 @@
-# Formatted with oxfmt when the repository moved off Biome.
-47bf18e485df9d3da981d1bb7afa19d50be6e33f
+# Revisions to skip in `git blame`, e.g. a repository-wide reformat.
+# Add full 40-character SHAs, one per line.

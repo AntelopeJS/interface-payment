@@ -133,9 +133,10 @@ await CreatePayment(
 );
 ```
 
-A method is saved as a side effect of a payment — `savePaymentMethod: true` on a
-checkout session, with a `customer` set. It appears in `ListPaymentMethods` once
-the payment reaches `succeeded` or `authorized`.
+A method is saved as a side effect of a payment — `savePaymentMethod: true` with
+a `customer` set, on either a checkout session or a `CreatePayment`. It appears
+in `ListPaymentMethods` once the payment reaches `succeeded` or `authorized`,
+not as soon as the call returns.
 
 `Customer` guarantees only `id`. PayPal and Adyen store no email or name; keep
 the payer's details in your own records.
@@ -148,8 +149,12 @@ if (!event) return new HTTPResult(200, "Ignored");
 ```
 
 - A `PaymentEvent` — handle it.
-- `undefined` — verified but unmodelled. Respond 200; providers send many.
+- `undefined` — genuine but unmodelled. Respond 200; providers send many.
 - Throws `WebhookVerificationError` — respond 403, act on nothing.
+
+Not necessarily a signature check: providers that do not sign (Mollie,
+Mangopay) send a bare record id and the implementation confirms it by reading
+that record back. Both satisfy the same contract.
 
 Body must be **raw bytes**, not re-serialised JSON.
 
@@ -161,16 +166,41 @@ newer than the state you hold; they arrive out of order.
 
 ## Implementing this interface
 
-Wire it in `construct()`, mirroring `@antelopejs/mongodb`:
+Declare `"antelopeJs": { "implements": ["@antelopejs/interface-payment"] }` and
+attach onto the **`internal` namespace**, not onto the module:
 
 ```ts
-await ImplementInterface(
-  await import("@antelopejs/interface-payment"),
-  await import("./implementations/payment"),
-);
+import { ImplementInterface } from "@antelopejs/interface-core";
+import { internal } from "@antelopejs/interface-payment";
+
+ImplementInterface(internal, {
+  createCheckoutSession: async (request, idempotencyKey, provider) => ({ /* ... */ }),
+  createPayment: /* ... */, getPayment: /* ... */,
+  capturePayment: /* ... */, cancelPayment: /* ... */,
+  refundPayment: /* ... */, getRefund: /* ... */,
+  createCustomer: /* ... */, getCustomer: /* ... */, deleteCustomer: /* ... */,
+  listPaymentMethods: /* ... */, detachPaymentMethod: /* ... */,
+  getCheckoutSession: /* ... */, verifyWebhook: /* ... */,
+});
 ```
 
-Export one function per `internal.*` proxy, PascalCase-free — the implementation
-names match the proxy names. Then run the shipped conformance suite
-(`dist/tests/payment.test.js`) against your module, with
-`ANTELOPE_PAYMENT_TEST_METHOD` set to a chargeable provider test token.
+Passing the whole module as the declaration — `ImplementInterface(await
+import("@antelopejs/interface-payment"), flatImplementation)` — throws
+`TypeError: Missing or malformed interface handler at
+implementation.internal.createCheckoutSession`. The proxies here live under
+`internal`, so the declaration must be `internal` (or the implementation must be
+wrapped as `{ internal: … }`). `@antelopejs/mongodb` is not the model for this
+step: `@antelopejs/interface-database` declares its proxies at the top level of
+each submodule, so the whole-module form works there and not here.
+
+One function per `internal.*` proxy, named exactly as the proxy is. Then run the
+shipped conformance suite (`dist/tests/payment.test.js`) against your module,
+with `ANTELOPE_PAYMENT_TEST_METHOD` set to a chargeable provider test token.
+
+### Conformance fixtures
+
+| Variable                                | Purpose                                                                                                                    |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `ANTELOPE_PAYMENT_TEST_METHOD`          | A provider test token `CreatePayment` charges successfully. Without it the charge, capture and refund blocks skip by name. |
+| `ANTELOPE_PAYMENT_TEST_METHOD_DECLINED` | A provider test token that declines. Without it the decline block skips.                                                   |
+| `ANTELOPE_PAYMENT_TEST_CURRENCY`        | ISO-4217 code to run against. Defaults to `EUR`; set it when the test account cannot settle euros.                         |

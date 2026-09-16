@@ -22,14 +22,14 @@ export interface Amount {
  * Providers name these differently and at different granularity; this is the
  * set every provider can report and a backend must actually branch on.
  */
-export const PAYMENT_STATUSES = [
+export const PAYMENT_STATUSES = Object.freeze([
   "pending",
   "requires_action",
   "authorized",
   "succeeded",
   "failed",
   "canceled",
-] as const;
+] as const);
 
 /**
  * Normalised payment status.
@@ -48,11 +48,8 @@ export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 /**
  * Statuses from which a payment can no longer change without a new call.
  */
-export const TERMINAL_PAYMENT_STATUSES: readonly PaymentStatus[] = [
-  "succeeded",
-  "failed",
-  "canceled",
-];
+export const TERMINAL_PAYMENT_STATUSES: readonly PaymentStatus[] =
+  Object.freeze(["succeeded", "failed", "canceled"]);
 
 /**
  * Whether a payment has reached a state it cannot leave on its own.
@@ -74,7 +71,7 @@ export function isTerminalPaymentStatus(status: PaymentStatus): boolean {
  * incompatible names, and a backend branches on very few of them. The provider's
  * own code travels alongside in {@link PaymentFailure.providerCode}.
  */
-export const PAYMENT_FAILURE_CODES = [
+export const PAYMENT_FAILURE_CODES = Object.freeze([
   "declined",
   "insufficient_funds",
   "expired_card",
@@ -83,7 +80,7 @@ export const PAYMENT_FAILURE_CODES = [
   "canceled_by_payer",
   "expired",
   "processing_error",
-] as const;
+] as const);
 
 /** Normalised reason a payment or refund did not go through. */
 export type PaymentFailureCode = (typeof PAYMENT_FAILURE_CODES)[number];
@@ -169,6 +166,13 @@ export interface PaymentRequest {
    */
   offSession?: boolean;
   /**
+   * Save the method this payment uses for later off-session charges.
+   * Requires `customer`. The saved method appears in
+   * {@link ListPaymentMethods} once the payment reaches `succeeded` or
+   * `authorized` — not as soon as this call returns.
+   */
+  savePaymentMethod?: boolean;
+  /**
    * Where to return the payer after an interactive step. Required unless
    * `offSession` is set, because any payment may turn out to need
    * authentication.
@@ -238,7 +242,11 @@ export interface CheckoutSession {
 }
 
 /** Normalised refund lifecycle. */
-export const REFUND_STATUSES = ["pending", "succeeded", "failed"] as const;
+export const REFUND_STATUSES = Object.freeze([
+  "pending",
+  "succeeded",
+  "failed",
+] as const);
 
 /**
  * Normalised refund status.
@@ -252,12 +260,12 @@ export type RefundStatus = (typeof REFUND_STATUSES)[number];
 /**
  * Why a refund was issued. Providers that take free text receive this as a note.
  */
-export const REFUND_REASONS = [
+export const REFUND_REASONS = Object.freeze([
   "duplicate",
   "fraudulent",
   "requested_by_customer",
   "other",
-] as const;
+] as const);
 
 /** Normalised refund reason. */
 export type RefundReason = (typeof REFUND_REASONS)[number];
@@ -332,12 +340,12 @@ export interface CustomerRequest {
 }
 
 /** Broad category of a saved payment method. */
-export const PAYMENT_METHOD_TYPES = [
+export const PAYMENT_METHOD_TYPES = Object.freeze([
   "card",
   "wallet",
   "bank_account",
   "other",
-] as const;
+] as const);
 
 /** Normalised payment method category. */
 export type PaymentMethodType = (typeof PAYMENT_METHOD_TYPES)[number];
@@ -402,7 +410,7 @@ export interface Dispute {
  * backend learns about asynchronously. `requires_action` has no event because it
  * is known synchronously, from the call that created the payment.
  */
-export const PAYMENT_EVENT_TYPES = [
+export const PAYMENT_EVENT_TYPES = Object.freeze([
   "payment.pending",
   "payment.authorized",
   "payment.succeeded",
@@ -411,7 +419,7 @@ export const PAYMENT_EVENT_TYPES = [
   "refund.succeeded",
   "refund.failed",
   "dispute.opened",
-] as const;
+] as const);
 
 /** Normalised webhook event type. */
 export type PaymentEventType = (typeof PAYMENT_EVENT_TYPES)[number];
@@ -453,8 +461,12 @@ export interface WebhookRequest {
    * Signature schemes cover the bytes, so a body that has been through
    * `JSON.parse` and re-serialised will fail verification. Read it with a raw
    * body handler.
+   *
+   * Typed as `Uint8Array` rather than `Buffer` so this package's published types
+   * carry no ambient Node dependency; a Node `Buffer` is one, and is what an
+   * HTTP handler will hand you.
    */
-  body: Buffer;
+  body: Uint8Array;
   /** Every request header, lowercased names. */
   headers: Record<string, string | string[] | undefined>;
 }
@@ -477,36 +489,69 @@ export class PaymentError extends Error {
   }
 }
 
+/** What a not-found error was looking for, for the message alone. */
+export type PaymentEntity = "payment" | "refund" | "checkout session";
+
 /**
- * The provider has no record under that identifier.
+ * The provider has no payment, refund or checkout session under that
+ * identifier.
+ *
+ * Providers differ on whether an identifier they cannot even parse is a
+ * not-found or a bad-request, and a caller holding opaque identifiers can
+ * neither tell those apart nor act differently on them. Implementations raise
+ * this for both.
  */
 export class PaymentNotFoundError extends PaymentError {
-  constructor(id: string) {
-    super(`No such payment: ${id}`);
+  constructor(
+    id: string,
+    /** Which kind of record was looked for. Names it in the message only. */
+    entity: PaymentEntity = "payment",
+    providerCode?: string,
+  ) {
+    super(`No such ${entity}: ${id}`, providerCode);
     this.name = "PaymentNotFoundError";
   }
 }
 
+/** What a customer-side not-found error was looking for. */
+export type CustomerEntity = "customer" | "payment method";
+
 /**
  * The provider has no customer or payment method under that identifier.
+ *
+ * As {@link PaymentNotFoundError}, this also covers an identifier the provider
+ * cannot parse.
  */
 export class CustomerNotFoundError extends PaymentError {
-  constructor(id: string) {
-    super(`No such customer: ${id}`);
+  constructor(
+    id: string,
+    /** Which kind of record was looked for. Names it in the message only. */
+    entity: CustomerEntity = "customer",
+    providerCode?: string,
+  ) {
+    super(`No such ${entity}: ${id}`, providerCode);
     this.name = "CustomerNotFoundError";
   }
 }
 
 /**
- * A webhook delivery did not carry a valid signature for the configured secret.
+ * A webhook delivery could not be established as genuine.
  *
- * Respond 403 and do not act on the body. Distinct from a verified delivery this
- * interface does not model, which {@link VerifyWebhook} reports by resolving
- * `undefined`.
+ * Respond 403 and do not act on the body.
+ *
+ * "Genuine" is defined by outcome, not by a signature check, because not every
+ * provider signs. Where there is a signature (Stripe, Adyen, PayPal) this means
+ * it did not verify. Where there is none (Mollie, Mangopay), the delivery names
+ * a record and the implementation confirms it by reading that record back from
+ * the provider; a body naming no record, or one the provider does not have,
+ * is not genuine and raises this.
+ *
+ * Distinct from a genuine delivery this interface does not model, which
+ * {@link VerifyWebhook} reports by resolving `undefined`.
  */
 export class WebhookVerificationError extends PaymentError {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, providerCode?: string) {
+    super(message, providerCode);
     this.name = "WebhookVerificationError";
   }
 }
@@ -523,8 +568,9 @@ export class InvalidPaymentStateError extends PaymentError {
     message: string,
     /** The status the payment was actually in. */
     public readonly status?: PaymentStatus,
+    providerCode?: string,
   ) {
-    super(message);
+    super(message, providerCode);
     this.name = "InvalidPaymentStateError";
   }
 }
@@ -541,8 +587,12 @@ export class UnsupportedOperationError extends PaymentError {
   constructor(
     /** The interface function that is unavailable, e.g. `"CapturePayment"`. */
     public readonly operation: string,
+    providerCode?: string,
   ) {
-    super(`Operation not supported by this payment provider: ${operation}`);
+    super(
+      `Operation not supported by this payment provider: ${operation}`,
+      providerCode,
+    );
     this.name = "UnsupportedOperationError";
   }
 }
@@ -676,8 +726,8 @@ export namespace internal {
     >();
 
   /**
-   * Verifies a webhook delivery's signature and normalises it.
-   * Resolves `undefined` for a verified delivery this interface does not model.
+   * Establishes a webhook delivery as genuine and normalises it.
+   * Resolves `undefined` for a genuine delivery this interface does not model.
    */
   export const verifyWebhook =
     InterfaceFunction<
@@ -941,8 +991,14 @@ export function DetachPaymentMethod(
 }
 
 /**
- * Verifies a webhook delivery's signature and normalises it into a
+ * Establishes that a webhook delivery is genuine and normalises it into a
  * {@link PaymentEvent}.
+ *
+ * Not necessarily a signature check. Providers that sign (Stripe, Adyen, PayPal)
+ * verify the signature over the raw bytes; providers that do not (Mollie,
+ * Mangopay) send a bare record identifier, and the implementation establishes
+ * the delivery by reading that record back from the provider. Both satisfy this
+ * contract, and a backend writes one handler either way.
  *
  * This is the only way a backend learns a payment reached a terminal state:
  * every provider modelled here settles asynchronously, and the payer's return
@@ -954,8 +1010,10 @@ export function DetachPaymentMethod(
  * - `undefined`, for a delivery that verified but is not one of
  *   {@link PAYMENT_EVENT_TYPES}. Providers send many such events. Respond 200:
  *   the delivery was genuine and rejecting it makes the provider retry forever.
- * - A rejection with {@link WebhookVerificationError}, for a delivery whose
- *   signature does not check out. Respond 403 and act on nothing.
+ * - A rejection with {@link WebhookVerificationError}, for a delivery that could
+ *   not be established as genuine — a signature that does not check out, or a
+ *   body naming no record the provider will confirm. Respond 403 and act on
+ *   nothing.
  *
  * Providers redeliver and reorder. De-duplicate on {@link PaymentEvent.id}, and
  * do not assume an event describes a newer state than the one you hold.
@@ -964,7 +1022,8 @@ export function DetachPaymentMethod(
  * @param provider - Optional provider identifier for multi-account setups
  * @returns The normalised event, or undefined if it is not one this interface
  *   models
- * @throws WebhookVerificationError if the signature does not verify
+ * @throws WebhookVerificationError if the delivery cannot be established as
+ *   genuine
  */
 export function VerifyWebhook(
   request: WebhookRequest,
