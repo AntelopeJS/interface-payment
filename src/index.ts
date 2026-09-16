@@ -1018,6 +1018,29 @@ export function DetachPaymentMethod(
  * Providers redeliver and reorder. De-duplicate on {@link PaymentEvent.id}, and
  * do not assume an event describes a newer state than the one you hold.
  *
+ * ### Where an event's fields may come from
+ *
+ * **Every field of the returned event must come from data the implementation has
+ * authenticated.** Establishing a delivery and populating an event are separate
+ * steps, and what the first one proves differs by provider:
+ *
+ * - A signature over the raw bytes authenticates *the whole body*. Building the
+ *   event from the body is then correct.
+ * - Reading a record back authenticates *that record only*. It proves a record
+ *   with that identifier exists. It proves nothing about any other field in the
+ *   body — not the event type, not the amount, not the status.
+ *
+ * So on a provider established by re-fetching, the body is a pointer and nothing
+ * else: `type`, and every field of `payment`, `refund` or `dispute`, are derived
+ * from the record read back. Which *kind* of record it is must also come from
+ * the read, not from a type field in the body.
+ *
+ * An implementation that re-fetches to establish the delivery and then takes the
+ * event type from the body accepts an unauthenticated payment-state forgery:
+ * anyone who can reach the endpoint posts a real payment identifier alongside a
+ * "succeeded" type, the read confirms the identifier exists, and the backend
+ * ships goods for a payment the provider's own record says is pending or failed.
+ *
  * @param request - The raw body and headers, unmodified
  * @param provider - Optional provider identifier for multi-account setups
  * @returns The normalised event, or undefined if it is not one this interface

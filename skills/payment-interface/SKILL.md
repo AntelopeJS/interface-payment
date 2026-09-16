@@ -156,6 +156,14 @@ Not necessarily a signature check: providers that do not sign (Mollie,
 Mangopay) send a bare record id and the implementation confirms it by reading
 that record back. Both satisfy the same contract.
 
+**If you implement a re-fetch provider, the body is a pointer and nothing else.**
+A signature authenticates the whole body; a re-fetch authenticates one record and
+proves nothing about any other field in the body. Derive the event's `type`, the
+kind of record it is, and every field of `payment`/`refund`/`dispute` from the
+record you read back — never from a type field in the body. Taking
+Mangopay's `EventType` from the body after re-fetching `RessourceId` accepts a
+forged payment state from anyone who can reach the endpoint.
+
 Body must be **raw bytes**, not re-serialised JSON.
 
 Types: `payment.pending|authorized|succeeded|failed|canceled`,
