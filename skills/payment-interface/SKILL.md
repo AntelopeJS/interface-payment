@@ -7,10 +7,9 @@ tags: [payment, checkout, refund, webhook, stripe, antelopejs]
 
 # payment interface
 
-Provider-agnostic payments. The PascalCase functions are thin wrappers over
-`internal.*` proxy points, so every call is async and queues until a provider
-module attaches. This package declares the contract and contains no provider
-logic.
+Provider-agnostic payments. Every call is an `InterfaceFunction` declaration,
+so it is async and queues until a provider module attaches. This package
+declares the contract and contains no provider logic.
 
 For anything beyond this contract, use the provider's own interface
 (`@antelopejs/interface-stripe`) alongside it. This interface has no escape
@@ -169,41 +168,42 @@ Body must be **raw bytes**, not re-serialised JSON.
 Types: `payment.pending|authorized|succeeded|failed|canceled`,
 `refund.succeeded|failed`, `dispute.opened`.
 
-De-duplicate on `event.id` — providers redeliver — and do not assume an event is
-newer than the state you hold; they arrive out of order.
+De-duplicate on `event.id`, and do not assume an event is newer than the state
+you hold — deliveries repeat and arrive out of order.
 
 ## Implementing this interface
 
 Declare `"antelopeJs": { "implements": ["@antelopejs/interface-payment"] }` and
-attach onto the **`internal` namespace**, not onto the module:
+attach the whole module, the way `@antelopejs/mongodb` does:
 
 ```ts
 import { ImplementInterface } from "@antelopejs/interface-core";
-import { internal } from "@antelopejs/interface-payment";
+import * as payment from "@antelopejs/interface-payment";
 
-ImplementInterface(internal, {
-  createCheckoutSession: async (request, idempotencyKey, provider) => ({ /* ... */ }),
-  createPayment: /* ... */, getPayment: /* ... */,
-  capturePayment: /* ... */, cancelPayment: /* ... */,
-  refundPayment: /* ... */, getRefund: /* ... */,
-  createCustomer: /* ... */, getCustomer: /* ... */, deleteCustomer: /* ... */,
-  listPaymentMethods: /* ... */, detachPaymentMethod: /* ... */,
-  getCheckoutSession: /* ... */, verifyWebhook: /* ... */,
-});
+await ImplementInterface(payment, await import("./implementations/payment"));
 ```
 
-Passing the whole module as the declaration — `ImplementInterface(await
-import("@antelopejs/interface-payment"), flatImplementation)` — throws
-`TypeError: Missing or malformed interface handler at
-implementation.internal.createCheckoutSession`. The proxies here live under
-`internal`, so the declaration must be `internal` (or the implementation must be
-wrapped as `{ internal: … }`). `@antelopejs/mongodb` is not the model for this
-step: `@antelopejs/interface-database` declares its proxies at the top level of
-each submodule, so the whole-module form works there and not here.
+Export one function per declared call, named **exactly** as the call is —
+`CreatePayment`, `GetPayment`, `CapturePayment` and so on. The names a consumer
+calls are the attachment points; there is no separate lowercase proxy.
 
-One function per `internal.*` proxy, named exactly as the proxy is. Then run the
-shipped conformance suite (`dist/tests/payment.test.js`) against your module,
-with `ANTELOPE_PAYMENT_TEST_METHOD` set to a chargeable provider test token.
+```ts
+export async function CreatePayment(request, idempotencyKey, provider) {
+  /* ... */
+}
+```
+
+Extra exports alongside them are fine, so the implementation can be split across
+files and re-exported from a barrel.
+
+Then run the shipped conformance suite against your module, with
+`ANTELOPE_PAYMENT_TEST_METHOD` set to a chargeable provider test token:
+
+```ts
+// src/test/conformance.test.ts
+import "@antelopejs/interface-payment/tests/payment.test";
+import "@antelopejs/interface-payment/tests/payment-charges.test";
+```
 
 ### Conformance fixtures
 
