@@ -6,8 +6,7 @@ import { InterfaceFunction } from "@antelopejs/interface-core";
  * Minor units are the currency's smallest indivisible unit: cents for `EUR`,
  * yen for `JPY` (which has no subunit), fils for `KWD` (which has three decimal
  * places). `{ value: 1050, currency: "EUR" }` is €10.50. Never a float, and
- * never a major-unit value — providers disagree about rounding and the error is
- * silent.
+ * never a major-unit value.
  */
 export interface Amount {
   /** Integer number of minor units. Must not be fractional. */
@@ -17,10 +16,7 @@ export interface Amount {
 }
 
 /**
- * The lifecycle of a payment, normalised across providers.
- *
- * Providers name these differently and at different granularity; this is the
- * set every provider can report and a backend must actually branch on.
+ * Every value {@link PaymentStatus} can take, in lifecycle order.
  */
 export const PAYMENT_STATUSES = Object.freeze([
   "pending",
@@ -55,7 +51,7 @@ export const TERMINAL_PAYMENT_STATUSES: readonly PaymentStatus[] =
  * Whether a payment has reached a state it cannot leave on its own.
  *
  * A non-terminal payment will change again, either because the payer acts or
- * because the provider settles it asynchronously; expect a webhook.
+ * because settlement completes; expect a {@link PaymentEvent}.
  *
  * @param status - The status to classify
  * @returns true for `succeeded`, `failed` and `canceled`
@@ -65,11 +61,10 @@ export function isTerminalPaymentStatus(status: PaymentStatus): boolean {
 }
 
 /**
- * Why a payment or refund did not go through.
+ * Every value {@link PaymentFailureCode} can take.
  *
- * Coarse on purpose: providers report hundreds of decline reasons under
- * incompatible names, and a backend branches on very few of them. The provider's
- * own code travels alongside in {@link PaymentFailure.providerCode}.
+ * A coarse set, for branching. The verbatim code is available alongside it in
+ * {@link PaymentFailure.providerCode}.
  */
 export const PAYMENT_FAILURE_CODES = Object.freeze([
   "declined",
@@ -98,7 +93,7 @@ export interface PaymentFailure {
 }
 
 /**
- * A payment, in whatever state the provider last reported it.
+ * A payment, in whatever state it was last reported in.
  *
  * `id` is opaque: it is the provider's own identifier and carries no structure
  * a caller may parse. Correlate with your own records through
@@ -168,15 +163,8 @@ export interface PaymentRequest {
   /**
    * Save the method this payment uses for later off-session charges.
    *
-   * Requires `customer`, and requires the payer to be present: this cannot be
-   * combined with `offSession`. Saving a method means taking a mandate from the
-   * payer, and an absent payer cannot give one — they may need to authenticate
-   * to authorise future charges. Providers enforce this; Stripe rejects the
-   * combination outright.
-   *
-   * The recurring shape is therefore two payments: one on-session that saves
-   * the method, then any number off-session against the saved
-   * {@link PaymentMethod}.
+   * Requires `customer`. Mutually exclusive with `offSession`: saving a method
+   * takes a mandate from the payer, so the payer must be present.
    *
    * The saved method appears in {@link ListPaymentMethods} once the payment
    * reaches `succeeded` or `authorized` — not as soon as this call returns.
@@ -184,11 +172,10 @@ export interface PaymentRequest {
   savePaymentMethod?: boolean;
   /**
    * Where to return the payer after an interactive step. Required unless
-   * `offSession` is set, because any payment may turn out to need
-   * authentication.
+   * `offSession` is set: any payment may turn out to need authentication.
    */
   returnUrl?: string;
-  /** Shown to the payer where the provider supports it. */
+  /** Shown to the payer where supported. */
   description?: string;
   /** Round-tripped opaque key/value pairs. */
   metadata?: Record<string, string>;
@@ -220,16 +207,16 @@ export interface CheckoutSessionRequest {
    * `authorized`.
    */
   savePaymentMethod?: boolean;
-  /** Shown to the payer where the provider supports it. */
+  /** Shown to the payer where supported. */
   description?: string;
-  /** BCP-47 language tag for the hosted page, where the provider supports it. */
+  /** BCP-47 language tag for the hosted page, where supported. */
   locale?: string;
   /** Round-tripped opaque key/value pairs. */
   metadata?: Record<string, string>;
 }
 
 /**
- * A hosted checkout session: a provider-rendered page that takes the payment.
+ * A hosted checkout session: an externally hosted page that takes the payment.
  */
 export interface CheckoutSession {
   /** Opaque provider identifier for the session. */
@@ -242,9 +229,8 @@ export interface CheckoutSession {
    * Opaque identifier of the payment the session produced, for
    * {@link GetPayment}, {@link CapturePayment} and {@link RefundPayment}.
    *
-   * Absent until the provider has created one, which for some providers is only
-   * once the payer has acted. Providers whose session and payment are the same
-   * object return the same id in both fields.
+   * Absent until a payment exists behind the session, which may not be until
+   * the payer has acted. May be equal to {@link CheckoutSession.id}.
    */
   payment?: string;
   /** Unix epoch milliseconds after which `redirectUrl` stops working. */
@@ -261,14 +247,13 @@ export const REFUND_STATUSES = Object.freeze([
 /**
  * Normalised refund status.
  *
- * Refunds settle asynchronously on every provider modelled here, so `pending`
- * is the usual result of {@link RefundPayment} and the terminal state arrives by
- * webhook.
+ * `pending` is the usual result of {@link RefundPayment}; the terminal state
+ * arrives as a `refund.succeeded` or `refund.failed` {@link PaymentEvent}.
  */
 export type RefundStatus = (typeof REFUND_STATUSES)[number];
 
 /**
- * Why a refund was issued. Providers that take free text receive this as a note.
+ * Every value {@link RefundReason} can take.
  */
 export const REFUND_REASONS = Object.freeze([
   "duplicate",
@@ -318,22 +303,20 @@ export interface RefundRequest {
 }
 
 /**
- * A customer: a container the provider associates saved payment methods with.
+ * A customer: the container saved payment methods are attached to.
  *
- * Only `id` is guaranteed to survive a round trip. Providers that have no
- * first-class customer object (PayPal's vault, Adyen's `shopperReference`) treat
- * the id as a key they attach tokens to and store nothing else, so
- * {@link GetCustomer} returns the id alone. Keep the payer's details in your own
- * records; do not read them back from here.
+ * Only `id` is guaranteed to survive a round trip; {@link GetCustomer} may
+ * return it alone. Keep the payer's details in your own records rather than
+ * reading them back from here.
  */
 export interface Customer {
   /** Opaque provider identifier. */
   id: string;
-  /** Stored only by providers with a customer object. */
+  /** Not guaranteed to survive a round trip. */
   email?: string;
-  /** Stored only by providers with a customer object. */
+  /** Not guaranteed to survive a round trip. */
   name?: string;
-  /** Stored only by providers with a customer object. */
+  /** Not guaranteed to survive a round trip. */
   metadata?: Record<string, string>;
 }
 
@@ -341,11 +324,11 @@ export interface Customer {
  * Parameters for {@link CreateCustomer}.
  */
 export interface CustomerRequest {
-  /** Stored where the provider supports it. */
+  /** Stored where supported. */
   email?: string;
-  /** Stored where the provider supports it. */
+  /** Stored where supported. */
   name?: string;
-  /** Stored where the provider supports it. */
+  /** Stored where supported. */
   metadata?: Record<string, string>;
 }
 
@@ -361,7 +344,7 @@ export const PAYMENT_METHOD_TYPES = Object.freeze([
 export type PaymentMethodType = (typeof PAYMENT_METHOD_TYPES)[number];
 
 /**
- * The parts of a saved card every provider surfaces.
+ * The displayable parts of a saved card.
  *
  * Enough to let a payer recognise which card they saved, and nothing more.
  * Never the PAN, never a token you could charge directly.
@@ -397,8 +380,7 @@ export interface PaymentMethod {
  * A payer's challenge to a captured payment.
  *
  * Reported so a backend can react — hold the goods, notify someone. Responding
- * to a dispute is provider-specific and is not modelled; use the provider's own
- * interface or dashboard.
+ * to a dispute is not modelled.
  */
 export interface Dispute {
   /** Opaque provider identifier. */
@@ -414,11 +396,11 @@ export interface Dispute {
 }
 
 /**
- * The normalised event types a provider webhook can produce.
+ * Every value {@link PaymentEventType} can take.
  *
- * The `payment.*` types are exactly the {@link PaymentStatus} transitions a
- * backend learns about asynchronously. `requires_action` has no event because it
- * is known synchronously, from the call that created the payment.
+ * The `payment.*` types are every {@link PaymentStatus} except
+ * `requires_action`, which is known synchronously from the call that created
+ * the payment and so never arrives as an event.
  */
 export const PAYMENT_EVENT_TYPES = Object.freeze([
   "payment.pending",
@@ -435,23 +417,23 @@ export const PAYMENT_EVENT_TYPES = Object.freeze([
 export type PaymentEventType = (typeof PAYMENT_EVENT_TYPES)[number];
 
 /**
- * A verified provider webhook, normalised.
+ * A verified webhook delivery, normalised.
  *
  * Exactly one of `payment`, `refund` and `dispute` is set, matching the `type`
- * prefix. The object carries the state at the moment the provider sent the
- * event, which may already be stale.
+ * prefix. It carries the state at the moment the event was sent, which may
+ * already be stale.
  */
 export interface PaymentEvent {
   /**
-   * Opaque provider identifier for the delivery.
+   * Opaque identifier for the delivery.
    *
-   * Providers redeliver, and deliver out of order. Treat handling as idempotent
-   * and de-duplicate on this id.
+   * Deliveries repeat and arrive out of order. Treat handling as idempotent and
+   * de-duplicate on this id.
    */
   id: string;
   /** Normalised type. */
   type: PaymentEventType;
-  /** Unix epoch milliseconds, as the provider reports it. */
+  /** Unix epoch milliseconds, as reported with the delivery. */
   createdAt: number;
   /** Set when `type` starts with `payment.`. */
   payment?: Payment;
@@ -466,15 +448,11 @@ export interface PaymentEvent {
  */
 export interface WebhookRequest {
   /**
-   * The unparsed request body.
+   * The unparsed request body, exactly as it arrived.
    *
-   * Signature schemes cover the bytes, so a body that has been through
-   * `JSON.parse` and re-serialised will fail verification. Read it with a raw
-   * body handler.
-   *
-   * Typed as `Uint8Array` rather than `Buffer` so this package's published types
-   * carry no ambient Node dependency; a Node `Buffer` is one, and is what an
-   * HTTP handler will hand you.
+   * A body that has been through `JSON.parse` and re-serialised will not
+   * verify. Read it with a raw body handler. A Node `Buffer` is a
+   * `Uint8Array` and can be passed straight through.
    */
   body: Uint8Array;
   /** Every request header, lowercased names. */
@@ -484,9 +462,9 @@ export interface WebhookRequest {
 /**
  * Base class for every error this interface raises.
  *
- * A failed *payment* is not an error: {@link CreatePayment} returns a
- * {@link Payment} with status `failed` and a {@link PaymentFailure}. These
- * errors mean the call itself did not happen.
+ * A failed *payment* is not an error: {@link CreatePayment} resolves with a
+ * {@link Payment} whose status is `failed`. These errors mean the call itself
+ * did not happen.
  */
 export class PaymentError extends Error {
   constructor(
@@ -503,13 +481,10 @@ export class PaymentError extends Error {
 export type PaymentEntity = "payment" | "refund" | "checkout session";
 
 /**
- * The provider has no payment, refund or checkout session under that
- * identifier.
+ * No payment, refund or checkout session exists under that identifier.
  *
- * Providers differ on whether an identifier they cannot even parse is a
- * not-found or a bad-request, and a caller holding opaque identifiers can
- * neither tell those apart nor act differently on them. Implementations raise
- * this for both.
+ * Also raised for an identifier that cannot be parsed at all, which a caller
+ * holding opaque identifiers cannot distinguish from one that is merely absent.
  */
 export class PaymentNotFoundError extends PaymentError {
   constructor(
@@ -527,10 +502,9 @@ export class PaymentNotFoundError extends PaymentError {
 export type CustomerEntity = "customer" | "payment method";
 
 /**
- * The provider has no customer or payment method under that identifier.
+ * No customer or payment method exists under that identifier.
  *
- * As {@link PaymentNotFoundError}, this also covers an identifier the provider
- * cannot parse.
+ * As {@link PaymentNotFoundError}, this also covers an unparseable identifier.
  */
 export class CustomerNotFoundError extends PaymentError {
   constructor(
@@ -549,13 +523,6 @@ export class CustomerNotFoundError extends PaymentError {
  *
  * Respond 403 and do not act on the body.
  *
- * "Genuine" is defined by outcome, not by a signature check, because not every
- * provider signs. Where there is a signature (Stripe, Adyen, PayPal) this means
- * it did not verify. Where there is none (Mollie, Mangopay), the delivery names
- * a record and the implementation confirms it by reading that record back from
- * the provider; a body naming no record, or one the provider does not have,
- * is not genuine and raises this.
- *
  * Distinct from a genuine delivery this interface does not model, which
  * {@link VerifyWebhook} reports by resolving `undefined`.
  */
@@ -567,11 +534,11 @@ export class WebhookVerificationError extends PaymentError {
 }
 
 /**
- * The request was well-formed but the provider cannot apply it to this payment.
+ * The request was well-formed but does not apply to the payment's current
+ * state.
  *
  * Capturing a payment that is not `authorized`, refunding more than was
- * captured, cancelling something already captured. The state is the problem, not
- * the arguments.
+ * captured, cancelling something already captured.
  */
 export class InvalidPaymentStateError extends PaymentError {
   constructor(
@@ -586,12 +553,10 @@ export class InvalidPaymentStateError extends PaymentError {
 }
 
 /**
- * The provider behind this interface does not offer the operation at all.
+ * The implementation behind this interface does not offer the operation at all.
  *
- * The contract is chosen so that this is rare — a backend on the generic
- * interface should be able to change provider without meeting one. An
- * implementation that must raise it says so in its README, and the operation is
- * unavailable for every call, not conditionally.
+ * Unconditional: an implementation that raises this raises it for every call to
+ * that function, and says so in its README.
  */
 export class UnsupportedOperationError extends PaymentError {
   constructor(
@@ -706,7 +671,7 @@ export namespace internal {
     >();
 
   /**
-   * Reads a customer. Providers without a customer object return the id alone.
+   * Reads a customer. May return the id alone.
    */
   export const getCustomer =
     InterfaceFunction<(id: string, provider?: string) => Promise<Customer>>();
@@ -749,14 +714,13 @@ export namespace internal {
 }
 
 /**
- * Creates a hosted checkout session: a provider-rendered page that collects the
- * payment method and takes the payment.
+ * Creates a hosted checkout session: an externally hosted page that collects
+ * the payment method and takes the payment.
  *
- * Send the payer to {@link CheckoutSession.redirectUrl}. They come back to
- * `successUrl` or `cancelUrl`, neither of which is proof of anything — the
- * payer's browser is not a trustworthy reporter and a redirect can be lost.
- * Treat the return as a prompt to call {@link GetCheckoutSession}, and treat the
- * webhook as the record.
+ * Send the payer to {@link CheckoutSession.redirectUrl}. Their return to
+ * `successUrl` or `cancelUrl` is not proof of the outcome: treat it as a prompt
+ * to call {@link GetCheckoutSession}, and take the {@link PaymentEvent} as the
+ * record.
  *
  * @param request - Amount, reference and the URLs to return the payer to
  * @param idempotencyKey - Caller-generated key; replaying it returns the
@@ -776,8 +740,8 @@ export function CreateCheckoutSession(
  * Reads a checkout session.
  *
  * Call this when the payer returns, to find out what actually happened.
- * {@link CheckoutSession.payment} is set once the provider has created a payment
- * behind the session.
+ * {@link CheckoutSession.payment} is set once a payment exists behind the
+ * session.
  *
  * @param id - Opaque session identifier
  * @param provider - Optional provider identifier for multi-account setups
@@ -802,20 +766,18 @@ export function GetCheckoutSession(
  * {@link PaymentRequest.savePaymentMethod}.
  *
  * A declined payment is a result, not an error: this resolves with a
- * {@link Payment} whose status is `failed` and whose {@link Payment.failure} says
- * why, so the synchronous decline and the one that arrives later by webhook are
- * handled in the same place. It rejects only when the call itself could not be
- * made.
+ * {@link Payment} whose status is `failed` and whose {@link Payment.failure}
+ * says why. It rejects only when the call itself could not be made.
  *
  * A status of `requires_action` means the payer must be sent to
- * {@link Payment.redirectUrl} — the same redirect the hosted flow uses, and the
- * only mechanism for 3DS/SCA in this interface.
+ * {@link Payment.redirectUrl}. That redirect is the only mechanism for 3DS and
+ * SCA in this interface.
  *
  * @param request - Amount, reference and how to charge it
  * @param idempotencyKey - Caller-generated key; replaying it returns the
  *   original payment rather than charging twice
  * @param provider - Optional provider identifier for multi-account setups
- * @returns The payment, in whatever state the provider left it
+ * @returns The payment, in whatever state the call left it
  */
 export function CreatePayment(
   request: PaymentRequest,
@@ -840,9 +802,9 @@ export function GetPayment(id: string, provider?: string): Promise<Payment> {
 /**
  * Captures an authorized payment.
  *
- * Omit `amount` to capture the full authorized amount. Capturing less than was
- * authorized releases the remainder; there is no second capture against the same
- * authorization in this interface, because not every provider allows one.
+ * Omit `amount` to capture the full authorized amount. Capturing less releases
+ * the remainder: one capture per authorization, so authorize per instalment if
+ * you need to capture in stages.
  *
  * @param id - Opaque payment identifier, in status `authorized`
  * @param idempotencyKey - Caller-generated key; replaying it returns the result
@@ -885,10 +847,10 @@ export function CancelPayment(
 /**
  * Refunds a captured payment, in full or in part.
  *
- * Refunds settle asynchronously on every provider this interface targets, so the
- * usual result is a {@link Refund} with status `pending`; the terminal state
- * arrives as a `refund.succeeded` or `refund.failed` event. Several partial
- * refunds against one payment are allowed, up to the captured amount.
+ * The usual result is a {@link Refund} with status `pending`; the terminal
+ * state arrives as a `refund.succeeded` or `refund.failed`
+ * {@link PaymentEvent}. Several partial refunds against one payment are
+ * allowed, up to the captured amount.
  *
  * @param request - Which payment, and how much
  * @param idempotencyKey - Caller-generated key; replaying it returns the
@@ -922,10 +884,10 @@ export function GetRefund(id: string, provider?: string): Promise<Refund> {
 /**
  * Creates a customer to save payment methods against.
  *
- * The returned id is the only field guaranteed to survive a round trip; see
- * {@link Customer}. Store it against your own user record.
+ * The returned id is the only field guaranteed to survive a round trip. Store
+ * it against your own user record.
  *
- * @param request - Details to store where the provider supports it
+ * @param request - Details to store where supported
  * @param idempotencyKey - Caller-generated key; replaying it returns the
  *   original customer rather than creating a second one
  * @param provider - Optional provider identifier for multi-account setups
@@ -942,8 +904,8 @@ export function CreateCustomer(
 /**
  * Reads a customer.
  *
- * Providers without a first-class customer object return the id and nothing
- * else. Do not treat a populated `email` or `name` as available everywhere.
+ * May return the id and nothing else. Do not rely on `email` or `name` being
+ * populated; see {@link Customer}.
  *
  * @param id - Opaque customer identifier
  * @param provider - Optional provider identifier for multi-account setups
@@ -1008,52 +970,29 @@ export function DetachPaymentMethod(
  * Establishes that a webhook delivery is genuine and normalises it into a
  * {@link PaymentEvent}.
  *
- * Not necessarily a signature check. Providers that sign (Stripe, Adyen, PayPal)
- * verify the signature over the raw bytes; providers that do not (Mollie,
- * Mangopay) send a bare record identifier, and the implementation establishes
- * the delivery by reading that record back from the provider. Both satisfy this
- * contract, and a backend writes one handler either way.
- *
- * This is the only way a backend learns a payment reached a terminal state:
- * every provider modelled here settles asynchronously, and the payer's return
- * from a redirect is not a report you can trust.
+ * This is the only way a backend learns that a payment reached a terminal
+ * state. The payer's return from a redirect is not a substitute.
  *
  * Three outcomes:
  *
  * - A {@link PaymentEvent}, for a delivery this interface models.
- * - `undefined`, for a delivery that verified but is not one of
- *   {@link PAYMENT_EVENT_TYPES}. Providers send many such events. Respond 200:
- *   the delivery was genuine and rejecting it makes the provider retry forever.
- * - A rejection with {@link WebhookVerificationError}, for a delivery that could
- *   not be established as genuine — a signature that does not check out, or a
- *   body naming no record the provider will confirm. Respond 403 and act on
+ * - `undefined`, for a genuine delivery that is not one of
+ *   {@link PAYMENT_EVENT_TYPES}. Respond 200; this is a normal result, and
+ *   rejecting it causes redelivery.
+ * - A rejection with {@link WebhookVerificationError}. Respond 403 and act on
  *   nothing.
  *
- * Providers redeliver and reorder. De-duplicate on {@link PaymentEvent.id}, and
- * do not assume an event describes a newer state than the one you hold.
+ * Deliveries repeat and arrive out of order. De-duplicate on
+ * {@link PaymentEvent.id}, and do not assume an event describes a newer state
+ * than the one you hold.
  *
- * ### Where an event's fields may come from
- *
- * **Every field of the returned event must come from data the implementation has
- * authenticated.** Establishing a delivery and populating an event are separate
- * steps, and what the first one proves differs by provider:
- *
- * - A signature over the raw bytes authenticates *the whole body*. Building the
- *   event from the body is then correct.
- * - Reading a record back authenticates *that record only*. It proves a record
- *   with that identifier exists. It proves nothing about any other field in the
- *   body — not the event type, not the amount, not the status.
- *
- * So on a provider established by re-fetching, the body is a pointer and nothing
- * else: `type`, and every field of `payment`, `refund` or `dispute`, are derived
- * from the record read back. Which *kind* of record it is must also come from
- * the read, not from a type field in the body.
- *
- * An implementation that re-fetches to establish the delivery and then takes the
- * event type from the body accepts an unauthenticated payment-state forgery:
- * anyone who can reach the endpoint posts a real payment identifier alongside a
- * "succeeded" type, the read confirms the identifier exists, and the backend
- * ships goods for a payment the provider's own record says is pending or failed.
+ * Implementations must populate every field of the returned event from data
+ * they have authenticated. Where a delivery is established by reading the named
+ * record back rather than by a signature over the body, that read authenticates
+ * the record alone: `type`, the kind of record, and every field of `payment`,
+ * `refund` or `dispute` come from the record, and the body is treated as a
+ * pointer and nothing else. `docs/4.webhooks.md` covers what goes wrong
+ * otherwise.
  *
  * @param request - The raw body and headers, unmodified
  * @param provider - Optional provider identifier for multi-account setups
