@@ -33,28 +33,40 @@ diverge most. For anything beyond this contract, use the provider's own interfac
 
 ## Quick start
 
-```ts
-import {
-  CreateCheckoutSession,
-  GetPayment,
-} from "@antelopejs/interface-payment";
-import { randomUUID } from "node:crypto";
+```ts docs-check
+import { CreateCheckoutSession } from "@antelopejs/interface-payment";
 
-const session = await CreateCheckoutSession(
-  {
-    amount: { value: 4999, currency: "EUR" },
-    reference: orderId,
-    successUrl: "https://shop.example/thanks",
-    cancelUrl: "https://shop.example/cart",
-  },
-  randomUUID(),
-);
-
-response.redirect(session.redirectUrl);
+export async function startCheckout(orderId: string, idempotencyKey: string) {
+  return CreateCheckoutSession(
+    {
+      amount: { value: 4999, currency: "EUR" },
+      reference: orderId,
+      successUrl: "https://shop.example/thanks",
+      cancelUrl: "https://shop.example/cart",
+    },
+    idempotencyKey,
+  );
+}
 ```
+
+Generate and persist one idempotency key per checkout attempt, and reuse it on
+retries. Call `startCheckout` from your authenticated checkout route, persist the
+returned session ID against the order, and redirect the payer to `redirectUrl`.
+Use your own return URLs and configure the provider credentials and webhook route.
 
 Fulfil the order from the `payment.succeeded` webhook, not from the payer's
 return — the browser is not a trustworthy reporter.
+
+## Compatibility
+
+<!-- docs-compat: ./package.json#peerDependencies -->
+
+| Package                      | Range            |
+| ---------------------------- | ---------------- |
+| `@antelopejs/interface-core` | `>=0.0.3 <1.0.0` |
+
+These are the peer requirements in `package.json`, not development or test-tool
+ranges. The implementing module may impose additional requirements.
 
 ## Conventions
 
