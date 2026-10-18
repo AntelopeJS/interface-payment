@@ -31,7 +31,6 @@ jobs:
             README.md
             docs
           typescript-project: docs/tsconfig.json
-      - run: pnpm add --global @antelopejs/core
       - run: pnpm prepack
       - run: pnpm test
       - run: pnpm lint

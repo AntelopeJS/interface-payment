@@ -10,7 +10,7 @@ and change provider by swapping the module wired underneath.
 ## Installation
 
 ```bash
-npm install @antelopejs/interface-payment
+pnpm add @antelopejs/interface-payment
 ```
 
 This package declares the contract and ships no provider logic. Wire a module
@@ -56,6 +56,21 @@ Use your own return URLs and configure the provider credentials and webhook rout
 
 Fulfil the order from the `payment.succeeded` webhook, not from the payer's
 return — the browser is not a trustworthy reporter.
+
+Replay protection lasts only for the provider-defined replay window. Persist
+operation keys and provider IDs; after expiration, reconcile uncertain payments
+with provider records before retrying. A reused key can otherwise charge again.
+
+## Choose a task
+
+- Take a payment: [checkout and direct payments](./docs/2.payments.md).
+- Save a method or charge off-session: [customers and methods](./docs/3.customers-and-methods.md).
+- Confirm settlement safely: [webhooks](./docs/4.webhooks.md).
+- Add a provider: [capabilities and conformance](./docs/5.provider-capability-matrix.md).
+- Add recurring billing: use Stripe's native subscriptions through
+  `@antelopejs/interface-subscriptions` when using Stripe. Choose
+  `@antelopejs/payment-subscriptions` explicitly when you want a generic renewal
+  clock instead; do not run both clocks for the same subscription.
 
 ## Compatibility
 

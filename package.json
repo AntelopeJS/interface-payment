@@ -10,6 +10,10 @@
     "refund",
     "webhook"
   ],
+  "homepage": "https://github.com/AntelopeJS/interface-payment/tree/main/docs",
+  "bugs": {
+    "url": "https://github.com/AntelopeJS/interface-payment/issues"
+  },
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -49,6 +53,7 @@
     "knip": "knip"
   },
   "devDependencies": {
+    "@antelopejs/core": "1.16.0",
     "@antelopejs/interface-core": ">=0.0.3 <1.0.0",
     "@antelopejs/tooling-configs": "^0.0.8",
     "@types/mocha": "^10.0.10",

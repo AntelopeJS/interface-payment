@@ -1,11 +1,29 @@
 ---
-name: payment-interface
-description: Provider-agnostic AntelopeJS payments — hosted checkout, direct payments with authorize/capture, refunds, saved payment methods charged off-session, and normalised webhook events. Use when code imports "@antelopejs/interface-payment", when an AntelopeJS module takes payments, refunds or recurring charges, or when you encounter CreateCheckoutSession, CreatePayment, CapturePayment, RefundPayment, ListPaymentMethods, VerifyWebhook, PaymentStatus, or PaymentEvent.
+name: taking-payments
+description: Takes and refunds AntelopeJS payments and verifies settlement. Use when adding checkout, saved payment methods, payment webhooks, or a payment provider implementation.
 category: antelopejs-interface
 tags: [payment, checkout, refund, webhook, stripe, antelopejs]
 ---
 
 # payment interface
+
+## Task workflow
+
+1. Read `README.md` for the task entry point and peer requirements.
+2. Choose hosted checkout or direct payment in `docs/2.payments.md`; use
+   `docs/3.customers-and-methods.md` when saving a method or charging off-session.
+3. Persist one operation key and returned provider IDs. Replay only within the
+   provider-defined replay window. After expiration, reconcile uncertain payments
+   before retrying; the same key can create another charge.
+4. Verify raw webhook bytes using `docs/4.webhooks.md`, deduplicate events, and
+   fulfil only after authenticated settlement. Completion means duplicate and
+   out-of-order deliveries cannot fulfil twice.
+5. For provider work, run `pnpm test` for local contracts, then run the shipped
+   conformance suites against the configured provider; report skipped fixtures.
+
+Use Stripe native subscriptions for Stripe recurring billing. Choose
+`@antelopejs/payment-subscriptions` explicitly for a generic renewal clock;
+assign one owner per subscription.
 
 Provider-agnostic payments. Every call is an `InterfaceFunction` declaration,
 so it is async and queues until a provider module attaches. This package
