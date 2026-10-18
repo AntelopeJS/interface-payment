@@ -24,8 +24,13 @@ import type {
  * to call {@link GetCheckoutSession}, and take the {@link PaymentEvent} as the
  * record.
  *
+ * Implementations must document their replay window. After expiration,
+ * applications must reconcile uncertain payments before retrying; reusing a
+ * key may create a new charge.
+ *
  * @param request - Amount, reference and the URLs to return the payer to
- * @param idempotencyKey - Caller-generated key; replaying it returns the
+ * @param idempotencyKey - Caller-generated key; within the provider-defined
+ *   replay window, replaying it returns the
  *   original session rather than creating a second one
  * @param provider - Optional provider identifier for multi-account setups
  * @returns The session, including the URL to redirect to
@@ -74,8 +79,13 @@ export const GetCheckoutSession =
  * {@link Payment.redirectUrl}. That redirect is the only mechanism for 3DS and
  * SCA in this interface.
  *
+ * Implementations must document their replay window. After expiration,
+ * applications must reconcile uncertain payments before retrying; reusing a
+ * key may create a new charge.
+ *
  * @param request - Amount, reference and how to charge it
- * @param idempotencyKey - Caller-generated key; replaying it returns the
+ * @param idempotencyKey - Caller-generated key; within the provider-defined
+ *   replay window, replaying it returns the
  *   original payment rather than charging twice
  * @param provider - Optional provider identifier for multi-account setups
  * @returns The payment, in whatever state the call left it
@@ -108,7 +118,8 @@ export const GetPayment =
  * you need to capture in stages.
  *
  * @param id - Opaque payment identifier, in status `authorized`
- * @param idempotencyKey - Caller-generated key; replaying it returns the result
+ * @param idempotencyKey - Caller-generated key; within the provider-defined
+ *   replay window, replaying it returns the result
  *   of the original capture rather than capturing again
  * @param amount - How much to capture, at most the authorized amount
  * @param provider - Optional provider identifier for multi-account setups
@@ -131,7 +142,8 @@ export const CapturePayment =
  * Cancels a payment that has not been captured, releasing any held funds.
  *
  * @param id - Opaque payment identifier, in a non-terminal status
- * @param idempotencyKey - Caller-generated key; replaying it is safe
+ * @param idempotencyKey - Caller-generated key; replay is safe within the
+ *   provider-defined replay window
  * @param provider - Optional provider identifier for multi-account setups
  * @returns The payment, with status `canceled`
  * @throws PaymentNotFoundError if no payment has that identifier
@@ -152,7 +164,8 @@ export const CancelPayment =
  * allowed, up to the captured amount.
  *
  * @param request - Which payment, and how much
- * @param idempotencyKey - Caller-generated key; replaying it returns the
+ * @param idempotencyKey - Caller-generated key; within the provider-defined
+ *   replay window, replaying it returns the
  *   original refund rather than refunding twice
  * @param provider - Optional provider identifier for multi-account setups
  * @returns The refund, usually still `pending`
@@ -187,7 +200,8 @@ export const GetRefund =
  * it against your own user record.
  *
  * @param request - Details to store where supported
- * @param idempotencyKey - Caller-generated key; replaying it returns the
+ * @param idempotencyKey - Caller-generated key; within the provider-defined
+ *   replay window, replaying it returns the
  *   original customer rather than creating a second one
  * @param provider - Optional provider identifier for multi-account setups
  * @returns The customer
@@ -221,7 +235,8 @@ export const GetCustomer =
  * Payments already taken are unaffected and remain readable.
  *
  * @param id - Opaque customer identifier
- * @param idempotencyKey - Caller-generated key; replaying it is safe
+ * @param idempotencyKey - Caller-generated key; replay is safe within the
+ *   provider-defined replay window
  * @param provider - Optional provider identifier for multi-account setups
  * @throws CustomerNotFoundError if no customer has that identifier
  */
@@ -248,7 +263,8 @@ export const ListPaymentMethods =
  * Detaches a saved payment method, leaving the customer in place.
  *
  * @param id - Opaque payment method identifier
- * @param idempotencyKey - Caller-generated key; replaying it is safe
+ * @param idempotencyKey - Caller-generated key; replay is safe within the
+ *   provider-defined replay window
  * @param provider - Optional provider identifier for multi-account setups
  * @throws CustomerNotFoundError if no payment method has that identifier
  */
