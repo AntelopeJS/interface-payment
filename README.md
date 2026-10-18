@@ -1,7 +1,11 @@
 # @antelopejs/interface-payment
 
-[![npm version](https://img.shields.io/npm/v/@antelopejs/interface-payment.svg)](https://www.npmjs.com/package/@antelopejs/interface-payment)
-[![license](https://img.shields.io/npm/l/@antelopejs/interface-payment.svg)](./LICENSE)
+<div align="center">
+<a href="https://www.npmjs.com/package/@antelopejs/interface-payment"><img alt="npm" src="https://img.shields.io/npm/v/@antelopejs/interface-payment?style=for-the-badge&labelColor=000000&color=000000"></a>
+<a href="./LICENSE"><img alt="License" src="https://img.shields.io/npm/l/@antelopejs/interface-payment?style=for-the-badge&labelColor=000000&color=000000"></a>
+<a href="https://discord.gg/sjK28QHrA7"><img alt="Discord" src="https://img.shields.io/badge/Discord-18181B?logo=discord&style=for-the-badge&color=000000"></a>
+<a href="./docs/1.introduction.md"><img alt="Docs" src="https://img.shields.io/badge/Docs-18181B?style=for-the-badge&color=000000"></a>
+</div>
 
 Provider-agnostic payment interface for AntelopeJS. Take payments, refund them,
 save payment methods and react to settlement events without naming a provider —
@@ -123,6 +127,20 @@ mint a chargeable payment method:
 | `ANTELOPE_PAYMENT_TEST_METHOD_DECLINED` | A token the provider declines. Without it the decline block skips.                                           |
 | `ANTELOPE_PAYMENT_TEST_CURRENCY`        | ISO-4217 code to run against. Defaults to `EUR`.                                                             |
 
+## Contributing
+
+Read [CONTRIBUTING.md](./CONTRIBUTING.md). Use Node.js 24 and pnpm 10.6.5:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm test
+pnpm lint
+pnpm format:check
+pnpm knip
+```
+
+`pnpm test` runs local contract tests through the AntelopeJS runner without a payment provider or credentials. The provider conformance suite described above is a separate integration check.
+
 ## License
 
-Apache-2.0
+[Apache-2.0](./LICENSE)
