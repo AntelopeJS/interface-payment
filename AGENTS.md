@@ -4,19 +4,19 @@ The provider-agnostic AntelopeJS payment interface, published as `@antelopejs/in
 
 ## Layout
 
-- `src/index.ts` re-exports `errors`, `functions` and `types`; that root is the only public entry besides `./tests/*`.
+- `src/index.ts` re-exports `errors`, `functions` and `types`; that root and `./tests/*` are the only code entry points in `exports`.
 - `src/tests` is the provider conformance suite. It compiles to `dist/tests` and ships through the `./tests/*` export, so provider repositories run it against their implementation. Renaming or moving a file there breaks those consumers.
 - `docs/` and `skills/` ship in the npm package. `docs/` is the guide the package `homepage` points to; CI type-checks its snippets through `docs/tsconfig.json`, which maps the package name onto `src/index.ts`. When a public contract changes, update the matching doc page, `README.md` and `skills/taking-payments/SKILL.md`.
 
 ## Versioning
 
-- `ImplementInterface` refuses a provider that lacks a declared function. Adding a function or a member a provider must implement, or changing a signature, is a breaking change for providers: release it as a new minor (`0.x.0`), never a patch.
+- In `@antelopejs/interface-core` 0.0.12 (the version installed here), `ImplementInterface` throws on a provider that lacks a declared function; 0.0.3, the peer minimum, does not check. Adding a function or a member a provider must implement, or changing a signature, is a breaking change for providers: release it as a new minor (`0.x.0`), never a patch.
 - `@antelopejs/interface-core` is a peer dependency with a `>=minimum <1.0.0` range, and the devDependency uses the same range. Change both together with the compatibility table in `README.md`, which the docs check compares to `peerDependencies`.
 
 ## Tests
 
 - `pnpm test` builds `dist` once, then runs `ajs module test .`. `src/antelope.test.ts` (`antelopeJs.test` in `package.json`) loads no modules and runs `test/*.test.js` against `dist`: the status helper, the error classes and the vocabularies. `pnpm run checks` runs it.
-- `pnpm run checks` does not run the conformance suite in `src/tests`. It needs a provider module wired in, and with nothing implementing the interface its calls queue and time out. Run it from a provider repository; `ANTELOPE_PAYMENT_TEST_METHOD`, `ANTELOPE_PAYMENT_TEST_METHOD_DECLINED` and `ANTELOPE_PAYMENT_TEST_CURRENCY` enable the charge and decline blocks (see `README.md`).
+- `pnpm run checks` does not run the conformance suite in `src/tests`. It needs a provider module wired in, and with nothing implementing the interface its calls queue and time out. Run it from a provider repository; `ANTELOPE_PAYMENT_TEST_METHOD` and `ANTELOPE_PAYMENT_TEST_METHOD_DECLINED` enable the charge and decline blocks, and `ANTELOPE_PAYMENT_TEST_CURRENCY` sets the currency (default `EUR`; see `README.md`).
 - `pnpm run checks` does not run the docs check (Markdown links, the compatibility table, and the `docs/` snippets type-checked through `docs/tsconfig.json`). Only CI runs it, through the `docs-files` and `docs-typescript-project` inputs of `.github/workflows/ci.yml`.
 
 <!-- antelopejs-guardrails:start -->
