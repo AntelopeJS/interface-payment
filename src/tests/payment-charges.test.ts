@@ -27,7 +27,7 @@ import {
   amount,
   assertAmount,
   assertEpochMillis,
-  assertPaymentShape,
+  assertPaymentContract,
   charge,
   key,
   newCustomer,
@@ -47,7 +47,7 @@ describe(`direct payments (${CHARGEABLE})`, function () {
     const value = amount(CHARGE_VALUE);
     const payment = await charge();
 
-    assertPaymentShape(payment, value);
+    assertPaymentContract(payment, value);
     assert.notEqual(
       payment.status,
       "requires_action",
@@ -169,7 +169,7 @@ describe(`authorize and capture (${CHARGEABLE})`, function () {
       key(),
     );
 
-    assertPaymentShape(authorized, value);
+    assertPaymentContract(authorized, value);
     assert.equal(authorized.status, "authorized");
     assert.equal(
       authorized.amountCaptured.value,
@@ -237,7 +237,7 @@ describe(`declines (${DECLINABLE})`, function () {
       key(),
     );
 
-    assertPaymentShape(payment, value);
+    assertPaymentContract(payment, value);
     assert.equal(payment.status, "failed");
     assert.ok(payment.failure, "a failed payment must say why");
     assert.ok(payment.failure.message.length > 0);
