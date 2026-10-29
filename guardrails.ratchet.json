@@ -1,6 +1,0 @@
-{
-  "rules": {
-    "anti-slop/no-shape-in-symbol-names": 9
-  },
-  "oversizeFiles": {}
-}

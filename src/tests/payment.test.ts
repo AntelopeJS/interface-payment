@@ -9,7 +9,7 @@ import {
   SUCCESS_URL,
   SUITE_TIMEOUT,
   amount,
-  assertPaymentShape,
+  assertPaymentContract,
   key,
   newCustomer,
   reference,
@@ -77,7 +77,7 @@ describe("hosted checkout", function () {
     assert.equal(read.status, created.status);
     if (created.payment !== undefined) {
       assert.equal(read.payment, created.payment);
-      assertPaymentShape(await GetPayment(created.payment), value);
+      assertPaymentContract(await GetPayment(created.payment), value);
     }
   });
 

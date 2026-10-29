@@ -98,7 +98,19 @@ export function assertAmount(
   assert.equal(actual.currency, expected.currency, `${label} currency`);
 }
 
-export function assertPaymentShape(payment: Payment, expected: Amount): void {
+/**
+ * Asserts a payment obeys the invariants the contract promises: a non-empty id,
+ * a status inside {@link PAYMENT_STATUSES}, the expected amount, one currency
+ * across the amounts, integer minor units, epoch-millisecond `createdAt`, and
+ * `redirectUrl` and `failure` present exactly when the status calls for them.
+ *
+ * @param payment - The payment a provider returned
+ * @param expected - The amount the payment was created for
+ */
+export function assertPaymentContract(
+  payment: Payment,
+  expected: Amount,
+): void {
   assert.ok(payment.id.length > 0, "payment id must be non-empty");
   assert.ok(
     PAYMENT_STATUSES.includes(payment.status),
