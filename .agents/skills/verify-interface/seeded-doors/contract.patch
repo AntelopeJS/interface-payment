@@ -1,0 +1,13 @@
+diff --git a/src/functions.ts b/src/functions.ts
+index aff0a8b..b4bf923 100644
+--- a/src/functions.ts
++++ b/src/functions.ts
+@@ -39,7 +39,7 @@ export const CreateCheckoutSession =
+   InterfaceFunction<
+     (
+       request: CheckoutSessionRequest,
+-      idempotencyKey: string,
++      idempotencyKey?: string,
+       provider?: string,
+     ) => Promise<CheckoutSession>
+   >();

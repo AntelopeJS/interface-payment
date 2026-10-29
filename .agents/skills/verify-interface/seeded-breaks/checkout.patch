@@ -1,0 +1,13 @@
+diff --git a/src/types.ts b/src/types.ts
+index 613b43a..16a5833 100644
+--- a/src/types.ts
++++ b/src/types.ts
+@@ -188,7 +188,7 @@ export interface CheckoutSessionRequest {
+   /** Your own identifier for this payment. Echoed back on {@link Payment}. */
+   reference: string;
+   /** Where the provider sends the payer after a completed payment. */
+-  successUrl: string;
++  successUrl?: string;
+   /** Where the provider sends the payer if they abandon. */
+   cancelUrl: string;
+   /**

@@ -1,0 +1,13 @@
+diff --git a/src/functions.ts b/src/functions.ts
+index aff0a8b..6bdc070 100644
+--- a/src/functions.ts
++++ b/src/functions.ts
+@@ -94,7 +94,7 @@ export const CreatePayment =
+   InterfaceFunction<
+     (
+       request: PaymentRequest,
+-      idempotencyKey: string,
++      idempotencyKey: string | undefined,
+       provider?: string,
+     ) => Promise<Payment>
+   >();

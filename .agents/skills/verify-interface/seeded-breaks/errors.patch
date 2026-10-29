@@ -1,0 +1,13 @@
+diff --git a/src/errors.ts b/src/errors.ts
+index e053cbd..60eafe7 100644
+--- a/src/errors.ts
++++ b/src/errors.ts
+@@ -31,7 +31,7 @@ export class PaymentNotFoundError extends PaymentError {
+   constructor(
+     id: string,
+     /** Which kind of record was looked for. Names it in the message only. */
+-    entity: PaymentEntity = "payment",
++    entity: PaymentEntity = "refund",
+     providerCode?: string,
+   ) {
+     super(`No such ${entity}: ${id}`, providerCode);

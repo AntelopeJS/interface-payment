@@ -1,0 +1,13 @@
+diff --git a/src/types.ts b/src/types.ts
+index 613b43a..522ad84 100644
+--- a/src/types.ts
++++ b/src/types.ts
+@@ -367,7 +367,7 @@ export interface PaymentMethod {
+   /** Broad category. */
+   type: PaymentMethodType;
+   /** Opaque identifier of the customer it is saved against. */
+-  customer: string;
++  customer?: string;
+   /** Present when `type` is `card`. */
+   card?: CardDetails;
+   /** Unix epoch milliseconds. */
