@@ -180,7 +180,7 @@ const config: VerifyConfig<typeof PaymentInterface> = {
     format: {
       globs: ["src/types.ts"],
       funnels: [],
-      containments: ["statuses/vocabularies", "webhooks/webhooks-pass-through"],
+      containments: ["statuses/vocabularies"],
       why: "the status, failure code, refund reason, method type and event type strings, the minor-unit amounts and the epoch-millisecond timestamps are what consumers store and compare",
     },
     contract: {
