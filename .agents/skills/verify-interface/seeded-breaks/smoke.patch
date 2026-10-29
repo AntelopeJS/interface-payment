@@ -1,0 +1,13 @@
+diff --git a/src/functions.ts b/src/functions.ts
+index aff0a8b..eaf9e4d 100644
+--- a/src/functions.ts
++++ b/src/functions.ts
+@@ -256,7 +256,7 @@ export const DeleteCustomer =
+  */
+ export const ListPaymentMethods =
+   InterfaceFunction<
+-    (customer: string, provider?: string) => Promise<PaymentMethod[]>
++    (customer: string, provider?: string, limit?: number) => Promise<PaymentMethod[]>
+   >();
+ 
+ /**

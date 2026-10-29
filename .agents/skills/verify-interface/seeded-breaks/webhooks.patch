@@ -1,0 +1,11 @@
+diff --git a/src/functions.ts b/src/functions.ts
+index aff0a8b..a288cbf 100644
+--- a/src/functions.ts
++++ b/src/functions.ts
+@@ -313,5 +313,5 @@ export const VerifyWebhook =
+     (
+       request: WebhookRequest,
+       provider?: string,
+-    ) => Promise<PaymentEvent | undefined>
++    ) => Promise<PaymentEvent>
+   >();

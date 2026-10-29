@@ -1,0 +1,12 @@
+diff --git a/src/types.ts b/src/types.ts
+index 613b43a..96afe84 100644
+--- a/src/types.ts
++++ b/src/types.ts
+@@ -257,6 +257,7 @@ export const REFUND_REASONS = Object.freeze([
+   "duplicate",
+   "fraudulent",
+   "requested_by_customer",
++  "chargeback",
+   "other",
+ ] as const);
+ 

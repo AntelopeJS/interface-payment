@@ -1,0 +1,13 @@
+diff --git a/src/types.ts b/src/types.ts
+index 613b43a..4a3358d 100644
+--- a/src/types.ts
++++ b/src/types.ts
+@@ -43,7 +43,7 @@ export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
+  * Statuses from which a payment can no longer change without a new call.
+  */
+ export const TERMINAL_PAYMENT_STATUSES: readonly PaymentStatus[] =
+-  Object.freeze(["succeeded", "failed", "canceled"]);
++  Object.freeze(["succeeded", "canceled"]);
+ 
+ /**
+  * Whether a payment has reached a state it cannot leave on its own.

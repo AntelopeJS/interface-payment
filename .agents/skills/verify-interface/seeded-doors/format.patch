@@ -1,0 +1,13 @@
+diff --git a/src/types.ts b/src/types.ts
+index 613b43a..0f21616 100644
+--- a/src/types.ts
++++ b/src/types.ts
+@@ -403,7 +403,7 @@ export interface Dispute {
+ export const PAYMENT_EVENT_TYPES = Object.freeze([
+   "payment.pending",
+   "payment.authorized",
+-  "payment.succeeded",
++  "payment.paid",
+   "payment.failed",
+   "payment.canceled",
+   "refund.succeeded",

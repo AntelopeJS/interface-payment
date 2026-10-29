@@ -1,0 +1,13 @@
+diff --git a/src/tests/support.ts b/src/tests/support.ts
+index 4d24092..c0a1608 100644
+--- a/src/tests/support.ts
++++ b/src/tests/support.ts
+@@ -79,7 +79,7 @@ const CLOCK_SKEW_ALLOWANCE = 5 * 60 * 1000;
+  */
+ export function assertEpochMillis(value: number, label: string): void {
+   assert.ok(
+-    value > EPOCH_MILLIS_FLOOR,
++    value > 0,
+     `${label} is ${value}, which is not epoch milliseconds (seconds, perhaps?)`,
+   );
+   assert.ok(

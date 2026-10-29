@@ -1,0 +1,13 @@
+diff --git a/src/types.ts b/src/types.ts
+index 613b43a..e5a5501 100644
+--- a/src/types.ts
++++ b/src/types.ts
+@@ -115,7 +115,7 @@ export interface Payment {
+   /** Normalised status. */
+   status: PaymentStatus;
+   /** The caller's own identifier, echoed back from the request. */
+-  reference: string;
++  reference?: string;
+   /** Opaque customer identifier, when the payment was attached to one. */
+   customer?: string;
+   /** Opaque payment method identifier, once the payer has chosen one. */
