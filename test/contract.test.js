@@ -54,6 +54,17 @@ it("keeps classifying correctly after a consumer tries to corrupt it", () => {
   assert.equal(payment.isTerminalPaymentStatus("succeeded"), true);
 });
 
+it("offers the hosted page locales a consumer can request", () => {
+  for (const locale of ["auto", "en", "en-GB", "fr-CA", "pt-BR", "zh-TW"]) {
+    assert.ok(
+      payment.PAYMENT_LOCALES.includes(locale),
+      `${locale} is a locale Stripe Checkout accepts`,
+    );
+  }
+  assert.equal(payment.PAYMENT_LOCALES.includes("en-US"), false);
+  assert.throws(() => payment.PAYMENT_LOCALES.push("xx"));
+});
+
 const PAYMENT_ID = "pay_contract";
 const REFUND_ID = "ref_contract";
 const SESSION_ID = "cs_contract";
