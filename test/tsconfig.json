@@ -5,7 +5,9 @@
     "composite": false,
     "declaration": false,
     "noEmit": true,
-    "rootDir": ".."
+    "rootDir": "..",
+    "module": "nodenext",
+    "moduleResolution": "nodenext"
   },
   "include": ["*.js"]
 }
