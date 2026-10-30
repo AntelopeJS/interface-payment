@@ -1,5 +1,6 @@
 const assert = require("node:assert/strict");
 
+/** @type {typeof import("../src/index")} */
 const payment = require("../dist/index.js");
 
 /**
