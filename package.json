@@ -26,6 +26,12 @@
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "imports": {
+    "#built": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
