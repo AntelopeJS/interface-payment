@@ -1,6 +1,6 @@
 {
   "name": "@antelopejs/interface-payment",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Provider-agnostic AntelopeJS payment interface: hosted checkout, direct payments with auth/capture, refunds, saved payment methods, and normalised webhook events",
   "keywords": [
     "antelopejs",
