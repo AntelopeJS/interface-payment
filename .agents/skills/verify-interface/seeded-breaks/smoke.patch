@@ -1,13 +1,25 @@
+diff --git a/package.json b/package.json
+index 0a91116..b68c2ea 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@antelopejs/interface-payment",
+-  "version": "0.2.0",
++  "version": "0.1.1",
+   "description": "Provider-agnostic AntelopeJS payment interface: hosted checkout, direct payments with auth/capture, refunds, saved payment methods, and normalised webhook events",
+   "keywords": [
+     "antelopejs",
 diff --git a/src/functions.ts b/src/functions.ts
-index aff0a8b..48ccc71 100644
+index aff0a8b..eaf9e4d 100644
 --- a/src/functions.ts
 +++ b/src/functions.ts
-@@ -240,7 +240,7 @@ export const GetCustomer =
-  * @param provider - Optional provider identifier for multi-account setups
-  * @throws CustomerNotFoundError if no customer has that identifier
+@@ -256,7 +256,7 @@ export const DeleteCustomer =
   */
--export const DeleteCustomer =
-+export const RemoveCustomer =
+ export const ListPaymentMethods =
    InterfaceFunction<
-     (id: string, idempotencyKey: string, provider?: string) => Promise<void>
+-    (customer: string, provider?: string) => Promise<PaymentMethod[]>
++    (customer: string, provider?: string, limit?: number) => Promise<PaymentMethod[]>
    >();
+ 
+ /**
