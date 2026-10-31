@@ -180,6 +180,62 @@ export interface PaymentRequest {
 }
 
 /**
+ * Every value {@link PaymentLocale} can take: the hosted page languages
+ * Stripe Checkout accepts. `auto` lets the provider pick from the payer's
+ * browser.
+ */
+export const PAYMENT_LOCALES = Object.freeze([
+  "auto",
+  "bg",
+  "cs",
+  "da",
+  "de",
+  "el",
+  "en",
+  "en-GB",
+  "es",
+  "es-419",
+  "et",
+  "fi",
+  "fil",
+  "fr",
+  "fr-CA",
+  "hr",
+  "hu",
+  "id",
+  "it",
+  "ja",
+  "ko",
+  "lt",
+  "lv",
+  "ms",
+  "mt",
+  "nb",
+  "nl",
+  "pl",
+  "pt",
+  "pt-BR",
+  "ro",
+  "ru",
+  "sk",
+  "sl",
+  "sv",
+  "th",
+  "tr",
+  "vi",
+  "zh",
+  "zh-HK",
+  "zh-TW",
+] as const);
+
+/**
+ * Language of a hosted checkout page. Providers that name their languages
+ * differently map each value to their own code, and fall back to their own
+ * default where they have no match.
+ */
+export type PaymentLocale = (typeof PAYMENT_LOCALES)[number];
+
+/**
  * Parameters for {@link CreateCheckoutSession}.
  */
 export interface CheckoutSessionRequest {
@@ -207,8 +263,8 @@ export interface CheckoutSessionRequest {
   savePaymentMethod?: boolean;
   /** Shown to the payer where supported. */
   description?: string;
-  /** BCP-47 language tag for the hosted page, where supported. */
-  locale?: string;
+  /** Language of the hosted page, where supported. */
+  locale?: PaymentLocale;
   /** Round-tripped opaque key/value pairs. */
   metadata?: Record<string, string>;
 }
