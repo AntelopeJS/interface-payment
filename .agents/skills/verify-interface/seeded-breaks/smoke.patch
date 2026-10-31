@@ -1,3 +1,15 @@
+diff --git a/package.json b/package.json
+index 0a91116..b68c2ea 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@antelopejs/interface-payment",
+-  "version": "0.2.0",
++  "version": "0.1.1",
+   "description": "Provider-agnostic AntelopeJS payment interface: hosted checkout, direct payments with auth/capture, refunds, saved payment methods, and normalised webhook events",
+   "keywords": [
+     "antelopejs",
 diff --git a/src/functions.ts b/src/functions.ts
 index aff0a8b..eaf9e4d 100644
 --- a/src/functions.ts
