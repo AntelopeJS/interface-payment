@@ -78,11 +78,13 @@ with provider records before retrying. A reused key can otherwise charge again.
 
 ## Compatibility
 
-<!-- docs-compat: ./package.json#peerDependencies -->
+<!-- antelopejs-docs-compat:start -->
 
-| Package                      | Range            |
-| ---------------------------- | ---------------- |
-| `@antelopejs/interface-core` | `>=0.0.3 <1.0.0` |
+| Package                      | Supported        | Tested with |
+| ---------------------------- | ---------------- | ----------- |
+| `@antelopejs/interface-core` | `>=0.0.3 <1.0.0` | `0.0.12`    |
+
+<!-- antelopejs-docs-compat:end -->
 
 These are the peer requirements in `package.json`, not development or test-tool
 ranges. The implementing module may impose additional requirements.

@@ -117,6 +117,29 @@ interface SuiteReport {
   failures: { fullTitle: string }[];
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isCount(value: unknown): value is number {
+  return typeof value === "number";
+}
+
+function isFailure(value: unknown): value is { fullTitle: string } {
+  return isRecord(value) && typeof value.fullTitle === "string";
+}
+
+function isSuiteReport(value: unknown): value is SuiteReport {
+  return (
+    isRecord(value) &&
+    isRecord(value.stats) &&
+    isCount(value.stats.passes) &&
+    isCount(value.stats.pending) &&
+    Array.isArray(value.failures) &&
+    value.failures.every(isFailure)
+  );
+}
+
 /** The shape this journey compares: how many tests passed or were skipped, and which failed. */
 interface SuiteSummary {
   passes: number;
@@ -125,7 +148,8 @@ interface SuiteSummary {
 }
 
 function summarize(stdout: string): SuiteSummary {
-  const report: SuiteReport = JSON.parse(stdout);
+  const report: unknown = JSON.parse(stdout);
+  if (!isSuiteReport(report)) throw new Error("the conformance run did not print a mocha JSON report");
   return { passes: report.stats.passes, pending: report.stats.pending, failed: report.failures.map((entry) => entry.fullTitle).sort() };
 }
 
