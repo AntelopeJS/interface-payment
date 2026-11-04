@@ -12,6 +12,8 @@ refund them, save payment methods, and react to settlement events without naming
 a provider. To change provider, you swap the module that implements the
 interface.
 
+Part of [AntelopeJS](https://github.com/AntelopeJS/antelopejs), the TypeScript framework where modules depend on contracts and the application chooses the provider. Built by the team behind [AntelopeJS DMS](https://github.com/AntelopeJS/dms).
+
 ## Installation
 
 ```bash
