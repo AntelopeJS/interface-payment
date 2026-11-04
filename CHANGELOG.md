@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.2.0
+
+[compare changes](https://github.com/AntelopeJS/interface-payment/compare/v0.1.0...v0.2.0)
+
+### 🚀 Enhancements
+
+- **skills:** Add the verify-interface verification skill ([#11](https://github.com/AntelopeJS/interface-payment/pull/11))
+
+### 📖 Documentation
+
+- **readme:** Use one Discord invite ([#17](https://github.com/AntelopeJS/interface-payment/pull/17))
+- **github:** Send questions and ideas to Discord ([#18](https://github.com/AntelopeJS/interface-payment/pull/18))
+
+### 🏡 Chore
+
+- Land the cleanup campaign on main ([#22](https://github.com/AntelopeJS/interface-payment/pull/22))
+- Land the cleanup campaign on main ([#23](https://github.com/AntelopeJS/interface-payment/pull/23))
+- Land the cleanup campaign on main ([#24](https://github.com/AntelopeJS/interface-payment/pull/24))
+
+### ❤️ Contributors
+
+- Antony Rizzitelli ([@Upd4ting](http://github.com/Upd4ting))
+
 ## v0.1.0
 
 [compare changes](https://github.com/AntelopeJS/interface-payment/compare/v0.0.2...v0.1.0)
