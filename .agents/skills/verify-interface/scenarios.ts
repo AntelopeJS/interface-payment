@@ -165,6 +165,7 @@ export const VOCABULARY_BODY = `
     REFUND_REASONS: payment.REFUND_REASONS,
     PAYMENT_METHOD_TYPES: payment.PAYMENT_METHOD_TYPES,
     PAYMENT_EVENT_TYPES: payment.PAYMENT_EVENT_TYPES,
+    PAYMENT_LOCALES: payment.PAYMENT_LOCALES,
   };
   const classified = Object.fromEntries(payment.PAYMENT_STATUSES.map((status) => [status, payment.isTerminalPaymentStatus(status)]));
   const frozen = Object.fromEntries(Object.entries(lists).map(([name, list]) => [name, Object.isFrozen(list)]));

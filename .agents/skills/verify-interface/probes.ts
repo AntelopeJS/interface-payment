@@ -7,7 +7,7 @@ type _Failure = Assert<Identical<Api.PaymentFailure, { code: Api.PaymentFailureC
 
 export const CHECKOUT_TYPES = `
 ${SHARED_TYPES}
-type _Request = Assert<Identical<Api.CheckoutSessionRequest, { amount: Api.Amount; reference: string; successUrl: string; cancelUrl: string; authorizeOnly?: boolean; customer?: string; savePaymentMethod?: boolean; description?: string; locale?: string; metadata?: Record<string, string> }>>;
+type _Request = Assert<Identical<Api.CheckoutSessionRequest, { amount: Api.Amount; reference: string; successUrl: string; cancelUrl: string; authorizeOnly?: boolean; customer?: string; savePaymentMethod?: boolean; description?: string; locale?: Api.PaymentLocale; metadata?: Record<string, string> }>>;
 type _Session = Assert<Identical<Api.CheckoutSession, { id: string; redirectUrl: string; status: Api.PaymentStatus; payment?: string; expiresAt?: number }>>;
 type _Create = Assert<Identical<Parameters<typeof Api.CreateCheckoutSession>, [request: Api.CheckoutSessionRequest, idempotencyKey: string, provider?: string]>>;
 type _CreateAnswer = Assert<Identical<Answer<typeof Api.CreateCheckoutSession>, Api.CheckoutSession>>;
@@ -91,5 +91,7 @@ type _RefundStatuses = Assert<Identical<typeof Api.REFUND_STATUSES, readonly ["p
 type _RefundReasons = Assert<Identical<typeof Api.REFUND_REASONS, readonly ["duplicate", "fraudulent", "requested_by_customer", "other"]>>;
 type _MethodTypes = Assert<Identical<typeof Api.PAYMENT_METHOD_TYPES, readonly ["card", "wallet", "bank_account", "other"]>>;
 type _EventTypes = Assert<Identical<typeof Api.PAYMENT_EVENT_TYPES, readonly ["payment.pending", "payment.authorized", "payment.succeeded", "payment.failed", "payment.canceled", "refund.succeeded", "refund.failed", "dispute.opened"]>>;
+type _Locales = Assert<Identical<typeof Api.PAYMENT_LOCALES, readonly ["auto", "bg", "cs", "da", "de", "el", "en", "en-GB", "es", "es-419", "et", "fi", "fil", "fr", "fr-CA", "hr", "hu", "id", "it", "ja", "ko", "lt", "lv", "ms", "mt", "nb", "nl", "pl", "pt", "pt-BR", "ro", "ru", "sk", "sl", "sv", "th", "tr", "vi", "zh", "zh-HK", "zh-TW"]>>;
+type _Locale = Assert<Identical<Api.PaymentLocale, (typeof Api.PAYMENT_LOCALES)[number]>>;
 type _IsTerminal = Assert<Identical<typeof Api.isTerminalPaymentStatus, (status: Api.PaymentStatus) => boolean>>;
 `;

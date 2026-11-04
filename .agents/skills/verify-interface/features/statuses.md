@@ -11,7 +11,7 @@ journeys:
 
 # Statuses and vocabularies
 
-A backend branches on the frozen vocabularies (`PAYMENT_STATUSES`, `PAYMENT_FAILURE_CODES`, `REFUND_STATUSES`, `REFUND_REASONS`, `PAYMENT_METHOD_TYPES`, `PAYMENT_EVENT_TYPES`) and asks `isTerminalPaymentStatus(status)` whether a payment can still change.
+A backend branches on the frozen vocabularies (`PAYMENT_STATUSES`, `PAYMENT_FAILURE_CODES`, `REFUND_STATUSES`, `REFUND_REASONS`, `PAYMENT_METHOD_TYPES`, `PAYMENT_EVENT_TYPES`, `PAYMENT_LOCALES`) and asks `isTerminalPaymentStatus(status)` whether a payment can still change.
 
 ## Sub-features
 
