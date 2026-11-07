@@ -18,6 +18,7 @@ import {
 export const SUITE_TIMEOUT = 60_000;
 const SETTLE_TIMEOUT = 30_000;
 const SETTLE_INTERVAL = 1_000;
+const SETTLE_FIRST_POLL = 50;
 export const CHARGE_VALUE = 2500;
 export const PARTIAL_VALUE = 1000;
 export const REFUND_VALUE = 700;
@@ -143,6 +144,39 @@ export function assertPaymentContract(
 }
 
 /**
+ * Reads the payment until `done` holds or the settle deadline passes.
+ *
+ * A fixed poll reads one second after each read ends, and so does this one.
+ * Most payments settle within milliseconds, so extra reads come after the
+ * previous read ends, 50 ms first and twice as long each time, whenever one
+ * fits, at the last read's latency, before the next one-second read. With a
+ * steady read latency, a payment is never seen later than the fixed poll would
+ * have seen it.
+ */
+async function pollPayment(
+  id: string,
+  done: (payment: Payment) => boolean,
+): Promise<Payment> {
+  const deadline = Date.now() + SETTLE_TIMEOUT;
+  let gap = SETTLE_FIRST_POLL;
+  let readStart = Date.now();
+  let payment = await GetPayment(id);
+  let readEnd = Date.now();
+  let intervalReadAt = readEnd + SETTLE_INTERVAL;
+  while (!done(payment) && Date.now() < deadline) {
+    const earlyAt = readEnd + gap;
+    const isEarly = earlyAt + (readEnd - readStart) <= intervalReadAt;
+    gap *= 2;
+    await delay(Math.max(0, (isEarly ? earlyAt : intervalReadAt) - Date.now()));
+    readStart = Date.now();
+    payment = await GetPayment(id);
+    readEnd = Date.now();
+    if (!isEarly) intervalReadAt = readEnd + SETTLE_INTERVAL;
+  }
+  return payment;
+}
+
+/**
  * Polls until the payment leaves the states it can leave on its own.
  *
  * Providers settle asynchronously, so `pending` right after a call says nothing.
@@ -153,16 +187,10 @@ export async function settle(
   id: string,
   expected: PaymentStatus,
 ): Promise<Payment> {
-  const deadline = Date.now() + SETTLE_TIMEOUT;
-  let payment = await GetPayment(id);
-  while (
-    payment.status !== expected &&
-    !isTerminalPaymentStatus(payment.status) &&
-    Date.now() < deadline
-  ) {
-    await delay(SETTLE_INTERVAL);
-    payment = await GetPayment(id);
-  }
+  const payment = await pollPayment(
+    id,
+    (read) => read.status === expected || isTerminalPaymentStatus(read.status),
+  );
   assert.equal(
     payment.status,
     expected,
@@ -214,12 +242,10 @@ export async function charge(): Promise<Payment> {
  * the deadline is the failure this exists to catch.
  */
 export async function settleRefundedTotal(id: string): Promise<Amount> {
-  const deadline = Date.now() + SETTLE_TIMEOUT;
-  let payment = await GetPayment(id);
-  while (payment.amountRefunded.value === 0 && Date.now() < deadline) {
-    await delay(SETTLE_INTERVAL);
-    payment = await GetPayment(id);
-  }
+  const payment = await pollPayment(
+    id,
+    (read) => read.amountRefunded.value !== 0,
+  );
   assert.notEqual(
     payment.amountRefunded.value,
     0,
