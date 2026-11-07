@@ -1,5 +1,6 @@
 ---
 covers:
+  - src/index.ts
   - src/errors.ts
 docs:
   - docs/2.payments.md
