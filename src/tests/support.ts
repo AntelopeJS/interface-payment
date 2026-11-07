@@ -146,26 +146,32 @@ export function assertPaymentContract(
 /**
  * Reads the payment until `done` holds or the settle deadline passes.
  *
- * Most payments settle within milliseconds, so the reads come 50, 150, 350 and
- * 750 ms after the first one, then on every whole second. A payment is never
- * seen later than a fixed one-second poll would have seen it.
+ * A fixed poll reads one second after each read ends. Those reads still
+ * happen. Most payments settle within milliseconds, so extra reads come 50,
+ * 100, 200 and 400 ms after the previous one ends, as long as one fits, at the
+ * last read's latency, before the next one-second read. With a steady read
+ * latency, a payment is never seen later than the fixed poll would have seen
+ * it.
  */
 async function pollPayment(
   id: string,
   done: (payment: Payment) => boolean,
 ): Promise<Payment> {
-  const start = Date.now();
-  const deadline = start + SETTLE_TIMEOUT;
-  let step = SETTLE_FIRST_POLL;
-  let pollAt = step;
+  const deadline = Date.now() + SETTLE_TIMEOUT;
+  let gap = SETTLE_FIRST_POLL;
+  let readStart = Date.now();
   let payment = await GetPayment(id);
+  let readEnd = Date.now();
+  let intervalReadAt = readEnd + SETTLE_INTERVAL;
   while (!done(payment) && Date.now() < deadline) {
-    await delay(Math.max(0, start + pollAt - Date.now()));
+    const earlyAt = readEnd + gap;
+    const isEarly = earlyAt + (readEnd - readStart) <= intervalReadAt;
+    gap *= 2;
+    await delay(Math.max(0, (isEarly ? earlyAt : intervalReadAt) - Date.now()));
+    readStart = Date.now();
     payment = await GetPayment(id);
-    step *= 2;
-    const nextSecond =
-      (Math.floor(pollAt / SETTLE_INTERVAL) + 1) * SETTLE_INTERVAL;
-    pollAt = Math.min(pollAt + step, nextSecond);
+    readEnd = Date.now();
+    if (!isEarly) intervalReadAt = readEnd + SETTLE_INTERVAL;
   }
   return payment;
 }
