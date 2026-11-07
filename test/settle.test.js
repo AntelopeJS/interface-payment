@@ -120,3 +120,13 @@ it("does not read back to back more than once after a read stalls", async functi
   const backToBack = pauses.filter((pause) => pause < 40).length;
   assert.ok(backToBack <= 1, `pauses ${pauses.join(", ")} ms`);
 });
+
+it("skips an extra read that a 300 ms read would carry past the next one-second read", async function () {
+  this.timeout(10_000);
+  settlesAfter(1_290, { latency: 300 });
+  const { value, ms } = await timed(() =>
+    settle("pay_slow_reads", "succeeded"),
+  );
+  assert.equal(value.status, "succeeded");
+  assert.ok(ms < 1_750, `settled after ${ms} ms`);
+});

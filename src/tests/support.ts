@@ -146,12 +146,12 @@ export function assertPaymentContract(
 /**
  * Reads the payment until `done` holds or the settle deadline passes.
  *
- * A fixed poll reads one second after each read ends. Those reads still
- * happen. Most payments settle within milliseconds, so extra reads come 50,
- * 100, 200 and 400 ms after the previous one ends, as long as one fits, at the
- * last read's latency, before the next one-second read. With a steady read
- * latency, a payment is never seen later than the fixed poll would have seen
- * it.
+ * A fixed poll reads one second after each read ends, and so does this one.
+ * Most payments settle within milliseconds, so extra reads come after the
+ * previous read ends, 50 ms first and twice as long each time, whenever one
+ * fits, at the last read's latency, before the next one-second read. With a
+ * steady read latency, a payment is never seen later than the fixed poll would
+ * have seen it.
  */
 async function pollPayment(
   id: string,
