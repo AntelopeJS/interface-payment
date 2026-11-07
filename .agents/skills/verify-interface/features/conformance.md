@@ -1,5 +1,9 @@
 ---
 covers:
+  - src/index.ts
+  - src/errors.ts
+  - src/functions.ts
+  - src/types.ts
   - src/tests/**
 docs:
   - docs/5.provider-capability-matrix.md
