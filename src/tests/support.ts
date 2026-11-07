@@ -18,6 +18,7 @@ import {
 export const SUITE_TIMEOUT = 60_000;
 const SETTLE_TIMEOUT = 30_000;
 const SETTLE_INTERVAL = 1_000;
+const SETTLE_FIRST_POLL = 50;
 export const CHARGE_VALUE = 2500;
 export const PARTIAL_VALUE = 1000;
 export const REFUND_VALUE = 700;
@@ -143,6 +144,33 @@ export function assertPaymentContract(
 }
 
 /**
+ * Reads the payment until `done` holds or the settle deadline passes.
+ *
+ * Most payments settle within milliseconds, so the reads come 50, 150, 350 and
+ * 750 ms after the first one, then on every whole second. A payment is never
+ * seen later than a fixed one-second poll would have seen it.
+ */
+async function pollPayment(
+  id: string,
+  done: (payment: Payment) => boolean,
+): Promise<Payment> {
+  const start = Date.now();
+  const deadline = start + SETTLE_TIMEOUT;
+  let step = SETTLE_FIRST_POLL;
+  let pollAt = step;
+  let payment = await GetPayment(id);
+  while (!done(payment) && Date.now() < deadline) {
+    await delay(Math.max(0, start + pollAt - Date.now()));
+    payment = await GetPayment(id);
+    step *= 2;
+    const nextSecond =
+      (Math.floor(pollAt / SETTLE_INTERVAL) + 1) * SETTLE_INTERVAL;
+    pollAt = Math.min(pollAt + step, nextSecond);
+  }
+  return payment;
+}
+
+/**
  * Polls until the payment leaves the states it can leave on its own.
  *
  * Providers settle asynchronously, so `pending` right after a call says nothing.
@@ -153,16 +181,10 @@ export async function settle(
   id: string,
   expected: PaymentStatus,
 ): Promise<Payment> {
-  const deadline = Date.now() + SETTLE_TIMEOUT;
-  let payment = await GetPayment(id);
-  while (
-    payment.status !== expected &&
-    !isTerminalPaymentStatus(payment.status) &&
-    Date.now() < deadline
-  ) {
-    await delay(SETTLE_INTERVAL);
-    payment = await GetPayment(id);
-  }
+  const payment = await pollPayment(
+    id,
+    (read) => read.status === expected || isTerminalPaymentStatus(read.status),
+  );
   assert.equal(
     payment.status,
     expected,
@@ -214,12 +236,10 @@ export async function charge(): Promise<Payment> {
  * the deadline is the failure this exists to catch.
  */
 export async function settleRefundedTotal(id: string): Promise<Amount> {
-  const deadline = Date.now() + SETTLE_TIMEOUT;
-  let payment = await GetPayment(id);
-  while (payment.amountRefunded.value === 0 && Date.now() < deadline) {
-    await delay(SETTLE_INTERVAL);
-    payment = await GetPayment(id);
-  }
+  const payment = await pollPayment(
+    id,
+    (read) => read.amountRefunded.value !== 0,
+  );
   assert.notEqual(
     payment.amountRefunded.value,
     0,

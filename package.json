@@ -30,6 +30,10 @@
     "#built": {
       "types": "./src/index.ts",
       "default": "./dist/index.js"
+    },
+    "#built/tests/*": {
+      "types": "./src/tests/*.ts",
+      "default": "./dist/tests/*.js"
     }
   },
   "exports": {
