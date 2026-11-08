@@ -36,11 +36,11 @@ function isSuiteReport(value: unknown): value is SuiteReport {
 }
 
 /** The shape this journey compares: how many tests passed or were skipped, and which failed. */
-interface SuiteSummary {
+type SuiteSummary = {
   passes: number;
   pending: number;
   failed: string[];
-}
+};
 
 function summarize(stdout: string): SuiteSummary {
   const report: unknown = JSON.parse(stdout);

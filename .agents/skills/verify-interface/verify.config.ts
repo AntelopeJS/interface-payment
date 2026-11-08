@@ -38,16 +38,16 @@ const config: VerifyConfig<typeof PaymentInterface> = {
   },
   interface: {
     calls: {
-      ".:PaymentError": { call: (api) => readError(new api.PaymentError("plain", "code-1")), expect: ["PaymentError", "plain", "code-1"] },
-      ".:PaymentNotFoundError": { call: (api) => readError(new api.PaymentNotFoundError("re_1", "refund", "code-2")), expect: ["PaymentNotFoundError", "No such refund: re_1", "code-2"] },
-      ".:CustomerNotFoundError": { call: (api) => readError(new api.CustomerNotFoundError("pm_1", "payment method", "code-3")), expect: ["CustomerNotFoundError", "No such payment method: pm_1", "code-3"] },
-      ".:WebhookVerificationError": { call: (api) => readError(new api.WebhookVerificationError("unsigned", "code-4")), expect: ["WebhookVerificationError", "unsigned", "code-4"] },
-      ".:InvalidPaymentStateError": { call: (api) => readError(new api.InvalidPaymentStateError("already captured", "succeeded", "code-5")), expect: ["InvalidPaymentStateError", "already captured", "code-5"] },
+      ".:PaymentError": { call: async (api) => readError(new api.PaymentError("plain", "code-1")), expect: ["PaymentError", "plain", "code-1"] },
+      ".:PaymentNotFoundError": { call: async (api) => readError(new api.PaymentNotFoundError("re_1", "refund", "code-2")), expect: ["PaymentNotFoundError", "No such refund: re_1", "code-2"] },
+      ".:CustomerNotFoundError": { call: async (api) => readError(new api.CustomerNotFoundError("pm_1", "payment method", "code-3")), expect: ["CustomerNotFoundError", "No such payment method: pm_1", "code-3"] },
+      ".:WebhookVerificationError": { call: async (api) => readError(new api.WebhookVerificationError("unsigned", "code-4")), expect: ["WebhookVerificationError", "unsigned", "code-4"] },
+      ".:InvalidPaymentStateError": { call: async (api) => readError(new api.InvalidPaymentStateError("already captured", "succeeded", "code-5")), expect: ["InvalidPaymentStateError", "already captured", "code-5"] },
       ".:UnsupportedOperationError": {
-        call: (api) => readError(new api.UnsupportedOperationError("CapturePayment", "code-6")),
+        call: async (api) => readError(new api.UnsupportedOperationError("CapturePayment", "code-6")),
         expect: ["UnsupportedOperationError", "Operation not supported by this payment provider: CapturePayment", "code-6"],
       },
-      ".:isTerminalPaymentStatus": { call: (api) => [api.isTerminalPaymentStatus("succeeded"), api.isTerminalPaymentStatus("authorized")], expect: [true, false] },
+      ".:isTerminalPaymentStatus": { call: async (api) => [api.isTerminalPaymentStatus("succeeded"), api.isTerminalPaymentStatus("authorized")], expect: [true, false] },
     },
   },
   journeys: {
