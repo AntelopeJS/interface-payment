@@ -10,7 +10,7 @@ The provider-agnostic AntelopeJS payment interface, published as `@antelopejs/in
 
 ## Versioning
 
-- In `@antelopejs/interface-core` 0.0.12 (the version installed here), `ImplementInterface` throws on a provider that lacks a declared function; 0.0.3, the peer minimum, does not check. Adding a function or a member a provider must implement, or changing a signature, is a breaking change for providers: release it as a new minor (`0.x.0`), never a patch.
+- In `@antelopejs/interface-core` 0.4.0 (the version installed here), `ImplementInterface` throws on a provider that lacks a declared function; 0.0.3, the peer minimum, does not check. Adding a function or a member a provider must implement, or changing a signature, is a breaking change for providers: release it as a new minor (`0.x.0`), never a patch.
 - `@antelopejs/interface-core` is a peer dependency with a `>=minimum <1.0.0` range, and the devDependency uses the same range. Change both together with the compatibility table in `README.md`, which the docs check compares to `peerDependencies`.
 
 ## Tests
@@ -87,6 +87,7 @@ Verify a boundary against the imports a developer or agent would plausibly write
 | String-keyed object tables are read through own keys only                      | `antelopejs/no-inherited-key-lookup`                |
 | A type guard checks each member it narrows to; keys with `Object.hasOwn`       | `antelopejs/no-presence-only-type-guard`            |
 | A type guard checks the nested elements and values it claims                   | review; no tool                                     |
+| `Object.assign` writes no `unknown`, `any` or mistyped value over a field      | `antelopejs/no-unsafe-object-assign`                |
 | Every file type-aware lint reads is listed by a tsconfig                       | `antelopejs/require-tsconfig-include`               |
 | Params ≤ 5, function ≤ 120 lines, file ≤ 500 lines, depth ≤ 4, complexity ≤ 20 | `eslint/max-*`, `eslint/complexity`                 |
 | Cleanup preserves declarations, runtime exports and DMS auto-imports           | `antelopejs-api-diff <base-ref>`                    |
