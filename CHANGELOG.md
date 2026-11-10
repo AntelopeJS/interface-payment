@@ -1,5 +1,40 @@
 # Changelog
 
+## v0.2.1
+
+[compare changes](https://github.com/AntelopeJS/interface-payment/compare/v0.2.0...v0.2.1)
+
+### 🔥 Performance
+
+- **tests:** Poll a settling payment after 50 ms and back off to whole seconds ([#31](https://github.com/AntelopeJS/interface-payment/pull/31))
+
+### 🩹 Fixes
+
+- **verify:** Run the features whose journeys load the changed contract source ([#30](https://github.com/AntelopeJS/interface-payment/pull/30))
+
+### 📖 Documentation
+
+- **readme:** Link the package to AntelopeJS and AntelopeJS DMS ([3108780](https://github.com/AntelopeJS/interface-payment/commit/3108780))
+
+### 📦 Build
+
+- **deps:** Bump @antelopejs packages to the 2026-11-06 releases ([#29](https://github.com/AntelopeJS/interface-payment/pull/29))
+- **deps:** Bump @antelopejs/tooling-configs to 0.3.4 ([#32](https://github.com/AntelopeJS/interface-payment/pull/32))
+- **deps:** Bump @antelopejs/tooling-configs to 0.4.0 ([#33](https://github.com/AntelopeJS/interface-payment/pull/33))
+
+### 🏡 Chore
+
+- **verify:** Remove seeded runs from the verification skill ([#26](https://github.com/AntelopeJS/interface-payment/pull/26))
+- **ci:** Remove the weekly mutation caller ([#27](https://github.com/AntelopeJS/interface-payment/pull/27))
+
+### 🤖 CI
+
+- Call ci-node.yml@v1 ([#28](https://github.com/AntelopeJS/interface-payment/pull/28))
+
+### ❤️ Contributors
+
+- Antony Rizzitelli ([@Upd4ting](http://github.com/Upd4ting))
+
 ## v0.2.0
 
 [compare changes](https://github.com/AntelopeJS/interface-payment/compare/v0.1.0...v0.2.0)
