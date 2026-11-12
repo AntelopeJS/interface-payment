@@ -1,10 +1,15 @@
-# `@antelopejs/interface-payment`
+<a href="https://github.com/AntelopeJS/antelopejs"><img data-illustration src="./.github/readme/strip.svg" width="100%" alt="INTERFACE · PAYMENT: part of AntelopeJS, hexagonal architecture beyond your own code. A glowing button reads Star AntelopeJS."></a>
 
 <div align="center">
-<a href="https://www.npmjs.com/package/@antelopejs/interface-payment"><img data-illustration alt="npm" src="https://img.shields.io/npm/v/@antelopejs/interface-payment?style=for-the-badge&labelColor=000000&color=000000"></a>
-<a href="./LICENSE"><img data-illustration alt="License" src="https://img.shields.io/npm/l/@antelopejs/interface-payment?style=for-the-badge&labelColor=000000&color=000000"></a>
-<a href="https://discord.gg/g4pFt6eXqu"><img data-illustration alt="Discord" src="https://img.shields.io/badge/Discord-18181B?logo=discord&style=for-the-badge&color=000000"></a>
-<a href="./docs/1.introduction.md"><img data-illustration alt="Docs" src="https://img.shields.io/badge/Docs-18181B?style=for-the-badge&color=000000"></a>
+
+# `@antelopejs/interface-payment`
+
+<a href="https://www.npmjs.com/package/@antelopejs/interface-payment"><img data-illustration alt="npm" src="https://img.shields.io/npm/v/@antelopejs/interface-payment?style=for-the-badge&labelColor=000000&color=000000"></a> <a href="./LICENSE"><img data-illustration alt="License" src="https://img.shields.io/npm/l/@antelopejs/interface-payment?style=for-the-badge&labelColor=000000&color=000000"></a> <a href="https://discord.gg/g4pFt6eXqu"><img data-illustration alt="Discord" src="https://img.shields.io/badge/Discord-18181B?logo=discord&style=for-the-badge&color=000000"></a> <a href="./docs/1.introduction.md"><img data-illustration alt="Documentation" src="https://img.shields.io/badge/Docs-18181B?style=for-the-badge&color=000000"></a> <a href="https://github.com/AntelopeJS/antelopejs"><img data-illustration alt="Star AntelopeJS" src="https://img.shields.io/github/stars/AntelopeJS/antelopejs?label=Star%20AntelopeJS&style=for-the-badge&labelColor=000000&color=000000&logo=github"></a>
+
+**The AntelopeJS contract for payments. Take payments, refund them, save payment methods and react to settlement events without naming a provider.**
+
+[Documentation](./docs/1.introduction.md) · [Implementations](./docs/5.provider-capability-matrix.md) · [All interfaces and providers](https://github.com/AntelopeJS/antelopejs#ecosystem)
+
 </div>
 
 The provider-agnostic payment interface for AntelopeJS. You take payments,
@@ -12,9 +17,7 @@ refund them, save payment methods, and react to settlement events without naming
 a provider. To change provider, you swap the module that implements the
 interface.
 
-Part of [AntelopeJS](https://github.com/AntelopeJS/antelopejs), the TypeScript framework where modules depend on contracts and the application chooses the provider. Built by the team behind [AntelopeJS DMS](https://github.com/AntelopeJS/dms).
-
-## Installation
+## Install
 
 ```bash
 pnpm add @antelopejs/interface-payment
@@ -82,19 +85,6 @@ can charge the payer again.
   choose `@antelopejs/payment-subscriptions` explicitly. Do not run both clocks
   for the same subscription.
 
-## Compatibility
-
-<!-- antelopejs-docs-compat:start -->
-
-| Package                      | Supported        | Tested with |
-| ---------------------------- | ---------------- | ----------- |
-| `@antelopejs/interface-core` | `>=0.0.3 <1.0.0` | `0.4.0`     |
-
-<!-- antelopejs-docs-compat:end -->
-
-The table lists the peer requirements in `package.json`, not the development or
-test-tool ranges. The implementing module can add requirements of its own.
-
 ## Conventions
 
 - **Integer minor units.** `{ value: 1050, currency: "EUR" }` is €10.50, never a float.
@@ -103,16 +93,6 @@ test-tool ranges. The implementing module can add requirements of its own.
 - **A decline is a result, not an exception.** `CreatePayment` resolves with
   `status: "failed"`. It rejects only when the call itself could not be made.
 - **An optional trailing `provider` argument.** It selects one of several configured accounts.
-
-## Documentation
-
-| Document                                                             | Contents                                                                  |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| [Introduction](./docs/1.introduction.md)                             | Scope, conventions, and installation                                      |
-| [Payments](./docs/2.payments.md)                                     | Checkout, direct payments, authorize and capture, refunds, and errors     |
-| [Customers and methods](./docs/3.customers-and-methods.md)           | Saved methods, and off-session and recurring charges                      |
-| [Webhooks](./docs/4.webhooks.md)                                     | Verification, the event set, and handling                                 |
-| [Provider capability matrix](./docs/5.provider-capability-matrix.md) | What each provider family does behind each call, and why the scope is set |
 
 ## Conformance suite
 
@@ -136,6 +116,29 @@ mint a chargeable payment method:
 | `ANTELOPE_PAYMENT_TEST_METHOD_DECLINED` | A token the provider declines. Without it the decline block skips.                                           |
 | `ANTELOPE_PAYMENT_TEST_CURRENCY`        | ISO-4217 code to run against. Defaults to `EUR`.                                                             |
 
+## Documentation
+
+| Document                                                             | Contents                                                                  |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| [Introduction](./docs/1.introduction.md)                             | Scope, conventions, and installation                                      |
+| [Payments](./docs/2.payments.md)                                     | Checkout, direct payments, authorize and capture, refunds, and errors     |
+| [Customers and methods](./docs/3.customers-and-methods.md)           | Saved methods, and off-session and recurring charges                      |
+| [Webhooks](./docs/4.webhooks.md)                                     | Verification, the event set, and handling                                 |
+| [Provider capability matrix](./docs/5.provider-capability-matrix.md) | What each provider family does behind each call, and why the scope is set |
+
+## Compatibility
+
+<!-- antelopejs-docs-compat:start -->
+
+| Package                      | Supported        | Tested with |
+| ---------------------------- | ---------------- | ----------- |
+| `@antelopejs/interface-core` | `>=0.0.3 <1.0.0` | `0.4.0`     |
+
+<!-- antelopejs-docs-compat:end -->
+
+The table lists the peer requirements in `package.json`, not the development or
+test-tool ranges. The implementing module can add requirements of its own.
+
 ## Contributing
 
 Read [CONTRIBUTING.md](./CONTRIBUTING.md). Use the Node.js version in `.nvmrc`
@@ -152,6 +155,24 @@ pnpm knip
 `pnpm test` runs the local contract tests through the AntelopeJS runner, with no
 payment provider and no credentials. The provider conformance suite above is a
 separate integration check.
+
+## Part of AntelopeJS
+
+This package belongs to [AntelopeJS](https://github.com/AntelopeJS/antelopejs), the TypeScript framework where modules depend on contracts and the application chooses the provider. The open-source back office [AntelopeJS DMS](https://github.com/AntelopeJS/dms) is built on it.
+
+<!-- antelopejs-framework-modules:start -->
+
+| Area         | Contracts                                                                                                                                                                                                                                                                                                                                                                                                                  | Providers                                                                                                                                                                                                                                           |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| API          | [`interface-api`](https://github.com/AntelopeJS/interface-api) · [`interface-api-util`](https://github.com/AntelopeJS/interface-api-util) · [`interface-data-api`](https://github.com/AntelopeJS/interface-data-api)                                                                                                                                                                                                       | [`api`](https://github.com/AntelopeJS/api)                                                                                                                                                                                                          |
+| Auth         | [`interface-auth`](https://github.com/AntelopeJS/interface-auth)                                                                                                                                                                                                                                                                                                                                                           | [`auth-jwt`](https://github.com/AntelopeJS/auth-jwt)                                                                                                                                                                                                |
+| Database     | [`interface-database`](https://github.com/AntelopeJS/interface-database) · [`interface-database-decorators`](https://github.com/AntelopeJS/interface-database-decorators) · [`interface-database-catalog`](https://github.com/AntelopeJS/interface-database-catalog) · [`interface-mongodb`](https://github.com/AntelopeJS/interface-mongodb) · [`interface-rethinkdb`](https://github.com/AntelopeJS/interface-rethinkdb) | [`postgres`](https://github.com/AntelopeJS/postgres) · [`mongodb`](https://github.com/AntelopeJS/mongodb) · [`rethinkdb`](https://github.com/AntelopeJS/rethinkdb)                                                                                  |
+| Redis        | [`interface-redis`](https://github.com/AntelopeJS/interface-redis) · [`interface-redis-scheduler`](https://github.com/AntelopeJS/interface-redis-scheduler)                                                                                                                                                                                                                                                                | [`redis`](https://github.com/AntelopeJS/redis)                                                                                                                                                                                                      |
+| Email        | [`interface-email`](https://github.com/AntelopeJS/interface-email)                                                                                                                                                                                                                                                                                                                                                         | [`nodemailer`](https://github.com/AntelopeJS/nodemailer) · [`brevo`](https://github.com/AntelopeJS/brevo)                                                                                                                                           |
+| File storage | [`interface-file-storage`](https://github.com/AntelopeJS/interface-file-storage)                                                                                                                                                                                                                                                                                                                                           | [`file-storage-local`](https://github.com/AntelopeJS/file-storage-local) · [`file-storage-s3`](https://github.com/AntelopeJS/file-storage-s3)                                                                                                       |
+| Payments     | **`interface-payment`** · [`interface-subscriptions`](https://github.com/AntelopeJS/interface-subscriptions) · [`interface-stripe`](https://github.com/AntelopeJS/interface-stripe)                                                                                                                                                                                                                                        | [`stripe`](https://github.com/AntelopeJS/stripe) · [`mollie`](https://github.com/AntelopeJS/mollie) · [`checkout-com`](https://github.com/AntelopeJS/checkout-com) · [`payment-subscriptions`](https://github.com/AntelopeJS/payment-subscriptions) |
+
+<!-- antelopejs-framework-modules:end -->
 
 ## License
 
