@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.2.2
+
+[compare changes](https://github.com/AntelopeJS/interface-payment/compare/v0.2.1...v0.2.2)
+
+### 📖 Documentation
+
+- **readme:** Adopt the AntelopeJS framework README style ([#36](https://github.com/AntelopeJS/interface-payment/pull/36))
+
+### 📦 Build
+
+- **deps:** Bump @antelopejs/tooling-configs to 0.5.0 ([#34](https://github.com/AntelopeJS/interface-payment/pull/34))
+- **deps:** Bump @antelopejs/tooling-configs to 0.5.1 ([#35](https://github.com/AntelopeJS/interface-payment/pull/35))
+- **deps:** Move to tooling-configs 0.7.1 and cap @antelopejs ranges below the next minor ([#38](https://github.com/AntelopeJS/interface-payment/pull/38))
+- Move to @antelopejs/tooling-configs 0.8 and the three-tier CI ([#39](https://github.com/AntelopeJS/interface-payment/pull/39))
+
+### 🤖 CI
+
+- Run the check jobs on Windows beside Linux ([#37](https://github.com/AntelopeJS/interface-payment/pull/37))
+
+### ❤️ Contributors
+
+- Antony Rizzitelli
+
 ## v0.2.1
 
 [compare changes](https://github.com/AntelopeJS/interface-payment/compare/v0.2.0...v0.2.1)
