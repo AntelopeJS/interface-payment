@@ -1,5 +1,39 @@
 # Changelog
 
+## v0.2.3
+
+[compare changes](https://github.com/AntelopeJS/interface-payment/compare/v0.2.2...v0.2.3)
+
+### 🚀 Enhancements
+
+- **errors:** Add IsPaymentError brand guard ([#52](https://github.com/AntelopeJS/interface-payment/pull/52))
+
+### 📖 Documentation
+
+- **skill:** Name IsPaymentError in taking-payments ([#53](https://github.com/AntelopeJS/interface-payment/pull/53))
+
+### 📦 Build
+
+- Roll out the trunk CI and tooling-configs 0.8.9 ([#43](https://github.com/AntelopeJS/interface-payment/pull/43))
+- Tooling-configs 0.10.7, pnpm 10.34.9 and a 24h minimum release age ([#47](https://github.com/AntelopeJS/interface-payment/pull/47))
+
+### 🏡 Chore
+
+- Promote next to main ([#42](https://github.com/AntelopeJS/interface-payment/pull/42))
+- **deps:** Update dependency @types/node to v22.20.5 ([#48](https://github.com/AntelopeJS/interface-payment/pull/48))
+- **deps:** Update dependency oxlint-tsgolint to v7.0.2008 ([#49](https://github.com/AntelopeJS/interface-payment/pull/49))
+- **deps:** Update dependency rimraf to v6.1.4 ([#50](https://github.com/AntelopeJS/interface-payment/pull/50))
+- **deps:** Update antelopejs tooling configs ([#51](https://github.com/AntelopeJS/interface-payment/pull/51))
+
+### 🤖 CI
+
+- Re-sync the AntelopeJS pack for the release app ([#45](https://github.com/AntelopeJS/interface-payment/pull/45))
+- Stop forwarding the retired RELEASE_GITHUB_TOKEN ([#46](https://github.com/AntelopeJS/interface-payment/pull/46))
+
+### ❤️ Contributors
+
+- Antony Rizzitelli
+
 ## v0.2.2
 
 [compare changes](https://github.com/AntelopeJS/interface-payment/compare/v0.2.1...v0.2.2)
