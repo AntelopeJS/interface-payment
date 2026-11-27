@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "payment-hosted-checkout",
+      "area": "framework",
+      "style": "clean",
+      "prompt": "How do I take a card payment with a hosted checkout page and send the payer back to my shop afterwards?",
+      "expect": {
+        "skills": ["taking-payments"],
+        "acceptable": ["antelopejs", "ajs-consume-interface"]
+      }
+    },
+    {
+      "id": "payment-hosted-checkout-casual",
+      "area": "framework",
+      "style": "casual",
+      "prompt": "need to charge a customer 49.99 eur and refund it later, what do i call?",
+      "expect": {
+        "skills": ["taking-payments"],
+        "acceptable": ["antelopejs", "ajs-consume-interface"]
+      }
+    },
+    {
+      "id": "payment-neighbour-database",
+      "area": "framework",
+      "style": "clean",
+      "prompt": "How do I read records from the database and filter them by a field?",
+      "expect": {
+        "skills": ["database-interface"],
+        "acceptable": [
+          "database-decorators-interface",
+          "data-api-interface",
+          "ajs-consume-interface",
+          "antelopejs"
+        ],
+        "avoid": ["taking-payments"]
+      }
+    },
+    {
+      "id": "payment-catch-error",
+      "area": "framework",
+      "style": "clean",
+      "prompt": "A payment call throws. How do I check that the caught error is a payment error, even when it comes from another copy of the payment package?",
+      "expect": {
+        "skills": ["taking-payments"],
+        "acceptable": ["antelopejs", "ajs-consume-interface"],
+        "mustMention": ["IsPaymentError"]
+      }
+    }
+  ]
+}

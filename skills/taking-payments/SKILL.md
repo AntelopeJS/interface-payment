@@ -55,6 +55,7 @@ import {
   DetachPaymentMethod,
   VerifyWebhook,
   isTerminalPaymentStatus,
+  IsPaymentError,
   PaymentError,
   PaymentNotFoundError,
   CustomerNotFoundError,
@@ -110,6 +111,21 @@ response.redirect(session.redirectUrl);
 ```
 
 On return: `GetCheckoutSession(id)` → `session.payment` → `GetPayment(...)`.
+
+## Errors
+
+Test a caught value with `IsPaymentError(error)`, never `instanceof
+PaymentError`: it also recognises an error thrown by another copy of this
+package, where `instanceof` is false.
+
+```ts
+try {
+  await GetPayment(id);
+} catch (error) {
+  if (IsPaymentError(error)) return handlePaymentFailure(error);
+  throw error;
+}
+```
 
 ## Status
 
