@@ -26,11 +26,12 @@ export type PaymentEntity = "payment" | "refund" | "checkout session";
  *
  * Also raised for an identifier that cannot be parsed at all, which a caller
  * holding opaque identifiers cannot distinguish from one that is merely absent.
+ *
+ * @param entity - Which kind of record was looked for. Names it in the message only.
  */
 export class PaymentNotFoundError extends PaymentError {
   constructor(
     id: string,
-    /** Which kind of record was looked for. Names it in the message only. */
     entity: PaymentEntity = "payment",
     providerCode?: string,
   ) {
@@ -46,11 +47,12 @@ export type CustomerEntity = "customer" | "payment method";
  * No customer or payment method exists under that identifier.
  *
  * As {@link PaymentNotFoundError}, this also covers an unparseable identifier.
+ *
+ * @param entity - Which kind of record was looked for. Names it in the message only.
  */
 export class CustomerNotFoundError extends PaymentError {
   constructor(
     id: string,
-    /** Which kind of record was looked for. Names it in the message only. */
     entity: CustomerEntity = "customer",
     providerCode?: string,
   ) {

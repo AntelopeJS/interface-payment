@@ -2,15 +2,6 @@ const assert = require("node:assert/strict");
 
 const payment = require("#built");
 
-/**
- * This package is a contract: the calls are `InterfaceFunction` declarations
- * with no body, and what they do is the runtime's business rather than this
- * package's. What it does execute is the status helper, the error classes and
- * the frozen vocabularies, so that is what is covered here. The behaviour of
- * the calls themselves is covered by the shared conformance suite in
- * `src/tests`, against a real implementation.
- */
-
 const TERMINAL = ["succeeded", "failed", "canceled"];
 const NON_TERMINAL = ["pending", "requires_action", "authorized"];
 
