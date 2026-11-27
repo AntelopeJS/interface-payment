@@ -1,5 +1,26 @@
 import type { PaymentStatus } from "./types";
 
+const PAYMENT_ERROR_BRAND = Symbol.for(
+  "@antelopejs/interface-payment/PaymentError",
+);
+
+/**
+ * Whether a value is a {@link PaymentError} or a subclass of it, including one
+ * built by another copy of this package.
+ *
+ * `instanceof PaymentError` is false across copies, so test with this guard instead.
+ *
+ * @param value - Value to test.
+ * @returns True when the value carries, as an own property, the brand every `PaymentError` sets to true.
+ */
+export function IsPaymentError(value: unknown): value is PaymentError {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    Object.getOwnPropertyDescriptor(value, PAYMENT_ERROR_BRAND)?.value === true
+  );
+}
+
 /**
  * Base class for every error this interface raises.
  *
@@ -14,6 +35,7 @@ export class PaymentError extends Error {
     public readonly providerCode?: string,
   ) {
     super(message);
+    Object.defineProperty(this, PAYMENT_ERROR_BRAND, { value: true });
     this.name = "PaymentError";
   }
 }
