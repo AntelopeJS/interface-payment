@@ -164,3 +164,41 @@ it("says which operation is unsupported, and which status blocked a call", () =>
   const state = new payment.InvalidPaymentStateError("nope", "succeeded");
   assert.equal(state.status, "succeeded");
 });
+
+describe("IsPaymentError", () => {
+  const brand = Symbol.for("@antelopejs/interface-payment/PaymentError");
+
+  it("accepts every error class", () => {
+    for (const error of [
+      new payment.PaymentError("x"),
+      new payment.PaymentNotFoundError("p"),
+      new payment.CustomerNotFoundError("c"),
+      new payment.WebhookVerificationError("w"),
+      new payment.InvalidPaymentStateError("s"),
+      new payment.UnsupportedOperationError("CapturePayment"),
+    ]) {
+      assert.equal(payment.IsPaymentError(error), true, error.name);
+    }
+  });
+
+  it("accepts an error built by a second copy of the package", () => {
+    const copy = new Error("x");
+    Object.defineProperty(copy, brand, { value: true });
+    assert.equal(payment.IsPaymentError(copy), true);
+  });
+
+  it("refuses a brand that is only inherited", () => {
+    const inherited = { __proto__: { [brand]: true } };
+    assert.equal(payment.IsPaymentError(inherited), false);
+  });
+
+  it("refuses a lookalike by name, a falsy brand and non-objects", () => {
+    const named = new Error("x");
+    named.name = "PaymentError";
+    const falsy = new Error("x");
+    Object.defineProperty(falsy, brand, { value: 1 });
+    for (const value of [named, falsy, new Error("x"), null, undefined, "x"]) {
+      assert.equal(payment.IsPaymentError(value), false);
+    }
+  });
+});
